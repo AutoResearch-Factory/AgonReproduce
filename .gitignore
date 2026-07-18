@@ -1,9 +1,26 @@
 # Local model and infrastructure configuration
-orchestrator/.settings.toml
+orchestrator/.settings*.toml
+!orchestrator/.settings.example.toml
 orchestrator/references/*.local.md
+orchestrator/references/servers.local.*
 .env
 .env.*
+*.env
 !.env.example
+.mcp.json
+mcp.local.json
+credentials/
+credentials.*
+secrets/
+secrets.*
+.netrc
+.npmrc
+.pypirc
+.aws/
+.kube/
+.config/gcloud/
+*.ovpn
+servers_notes.md
 
 # Credentials and private keys
 *.pem
@@ -11,8 +28,12 @@ orchestrator/references/*.local.md
 *.p12
 *.pfx
 .ssh/
+id_rsa*
+id_ed25519*
+known_hosts
 
 # Case and training artifacts belong in AgonReproduce-artifact
+AgonReproduce-artifact/
 topics/
 workspace/
 training/
@@ -22,10 +43,20 @@ data/
 materials/
 .agent-sessions/
 
-# Runtime output
+# Local agent discovery and runtime output
+.claude/
+.codex/
+.agents/
+plugins/
 *.log
 *.out
 *.pid
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 __pycache__/
 *.py[cod]
 .pytest_cache/

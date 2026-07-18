@@ -1,5 +1,7 @@
 # AgonReproduce
 
+[中文](README_zh.md)
+
 AgonReproduce is a prompt-first system for auditing the reliability of research claims. It
 combines literature investigation, direct experiment reproduction, independent review, human
 correction, and training-data curation in one traceable workflow.
@@ -56,6 +58,15 @@ This repository contains the reusable orchestration prompts and generic template
 execution traces, human feedback, credentials, and private infrastructure configuration belong in
 a separate artifact repository, conventionally named `AgonReproduce-artifact`.
 
+The names are fixed:
+
+- product and framework repository: `AgonReproduce`;
+- private case/artifact repository: `AgonReproduce-artifact`;
+- Claude Code plugin and skill namespace: `agon-reproduce`.
+
+The lowercase namespace follows the same machine-name convention as the `Agon` repository and
+its `agon` plugin namespace. It is not a second product name.
+
 Never commit:
 
 - `orchestrator/.settings.toml`;
@@ -65,23 +76,40 @@ Never commit:
 
 ## Setup
 
-1. Create `orchestrator/.settings.toml` from `.settings.example.toml` and select the available
-   model backends.
-2. Create `orchestrator/references/servers.local.md` if remote execution is required.
+Clone `AgonReproduce`, then create or clone your own private `AgonReproduce-artifact` repository.
+Keep the directories side by side:
+
+```text
+.
+├── AgonReproduce/
+└── AgonReproduce-artifact/
+```
+
+1. Create `AgonReproduce/orchestrator/.settings.toml` from
+   `AgonReproduce/orchestrator/.settings.example.toml` and select the available model backends.
+2. Create `AgonReproduce/orchestrator/references/servers.local.md` if remote execution is
+   required.
 3. Install the required literature and writing skills listed in `project_manual.md`.
-4. Run the Claude Code plugin with the separate artifact repository as the working directory.
-5. Put a target-paper brief in `topics/<slug>.md`, then start `investigation-tick <slug>`.
+4. Start Claude Code from the artifact repository:
+
+   ```bash
+   cd AgonReproduce-artifact
+   claude --plugin-dir ../AgonReproduce/orchestrator
+   ```
+
+5. Put a target-paper brief in `topics/<slug>.md`, then run
+   `/investigation-tick <slug>` inside Claude Code.
 
 The public defaults use the standard `claude` and `codex` CLIs. Optional `deepseek` and `kimi`
 routes expect locally supplied Claude-compatible wrappers named `claude-ds` and `claude-kimi`.
 
 ## Main Commands
 
-- `investigation-tick <slug>` initializes the workspace and runs the investigation loop.
-- `experiment-tick <slug>` runs direct reproduction and experiment review.
-- `deep-lit-tick --scope investigation|experiment <slug>` expands the literature evidence.
-- `human-feedback-tick ...` records and applies human corrections.
-- `training-data-tick <slug> <trigger>` converts a fixed checkpoint into reviewed dataset rows.
+- `/investigation-tick <slug>` initializes the workspace and runs the investigation loop.
+- `/experiment-tick <slug>` runs direct reproduction and experiment review.
+- `/deep-lit-tick --scope investigation|experiment <slug>` expands the literature evidence.
+- `/human-feedback-tick ...` records and applies human corrections.
+- `/training-data-tick <slug> <trigger>` converts a fixed checkpoint into reviewed dataset rows.
 
 ## Security
 

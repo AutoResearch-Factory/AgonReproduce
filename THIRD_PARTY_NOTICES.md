@@ -5,7 +5,7 @@ material remains subject to the corresponding upstream license.
 
 ## Auto Claude Code Research in Sleep (ARIS)
 
-- Source: https://github.com/Phy-Ren/Auto-claude-code-research-in-sleep
+- Source: https://github.com/wanshuiyin/Auto-claude-code-research-in-sleep
 - Used in: `orchestrator/skills/aris/` and `orchestrator/skills_aris/`
 - License: MIT
 - Copyright: Copyright (c) 2026 wanshuiyin
