@@ -1,0 +1,9 @@
+# AgonReproduce 自身运行记录的默认用途。只授权内部能力提升；公开/商业 projection 需另行授权和脱敏。
+base_case_id: null
+dataset_split: train
+training_rights:
+  trace_trainable: true
+  human_feedback_trainable: true
+  public_release: false
+  commercial_use: false
+  redaction_required: true

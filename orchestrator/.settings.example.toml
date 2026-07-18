@@ -1,0 +1,12 @@
+# AgonReproduce local settings
+
+parallelism      = 4              # Max concurrently active runs managed by one workspace coder
+reviewer_model   = "claude"       # experiment reviewer; fallback: codex
+coder_model      = "claude"       # shared experiment coder
+scientist_model  = "codex"        # experiment scientist
+auditor_model    = "claude"       # experiment auditor
+investigator_model = "codex"      # investigator
+inves_auditor_model = "claude"    # investigation auditor
+inves_reviewer_model = "claude"   # investigation reviewer; fallback: codex
+lit_tick_model   = "claude"       # "claude" | "deepseek" | "kimi" | "codex"
+lit_reader_model = "claude"       # "claude" | "deepseek" | "kimi" | "codex"

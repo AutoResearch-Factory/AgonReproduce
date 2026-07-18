@@ -1,0 +1,40 @@
+# Local model and infrastructure configuration
+orchestrator/.settings.toml
+orchestrator/references/*.local.md
+.env
+.env.*
+!.env.example
+
+# Credentials and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+.ssh/
+
+# Case and training artifacts belong in AgonReproduce-artifact
+topics/
+workspace/
+training/
+results/
+checkpoints/
+data/
+materials/
+.agent-sessions/
+
+# Runtime output
+*.log
+*.out
+*.pid
+*.lock
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*~

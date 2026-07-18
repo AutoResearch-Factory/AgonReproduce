@@ -1,0 +1,56 @@
+{
+  "case_id": "case-slug",
+  "generated_at": "ISO-8601",
+  "source_batch_ids": ["TB-YYYYMMDDTHHMMSSZ-suffix"],
+  "policy_versions": [],
+  "scope": "current evidence snapshot; not a permanent final verdict",
+  "claims": [
+    {
+      "claim_id": "C1",
+      "claim_text": "verbatim target claim",
+      "source_refs": [],
+      "assessments": [
+        {
+          "assessment_domain": "experiment|investigation",
+          "source_review_event_id": "EVT-*",
+          "source_review_refs": [],
+          "execution_status": "succeeded|failed|blocked|not_attempted",
+          "result_match": "matched|partial|mismatched|unknown",
+          "claim_verdict": "supported|partially_supported|contradicted|insufficient_evidence",
+          "failure_attribution": "paper_claim|artifact|environment|data|metric|protocol|our_bug|budget|unknown",
+          "confidence": 0.0,
+          "evidence_refs": [],
+          "human_feedback_refs": [],
+          "label_quality": "known_answer|human_feedback|evidence_verified|reviewer_agreement|uncertain",
+          "remaining_uncertainty": []
+        }
+      ]
+    }
+  ],
+  "profiles": {
+    "artifact_availability": [{"assessment_domain":"experiment|investigation","value":"complete|partial|missing|unknown","evidence_refs":[],"source_review_refs":[]}],
+    "execution_reproducibility": [{"assessment_domain":"experiment|investigation","value":"reproduced|deviates|blocked|untested","evidence_refs":[],"source_review_refs":[]}],
+    "claim_evidence_consistency": [{"assessment_domain":"experiment|investigation","value":"supported|partial|contradicted|unknown","evidence_refs":[],"source_review_refs":[]}],
+    "independent_replication": [{"assessment_domain":"experiment|investigation","value":"supporting|mixed|negative|none_found|untested","evidence_refs":[],"source_review_refs":[]}],
+    "robustness_and_scope": [{"assessment_domain":"experiment|investigation","value":"robust|narrow|unstable|untested","evidence_refs":[],"source_review_refs":[]}],
+    "integrity_signal": [{"assessment_domain":"experiment|investigation","value":"none|anomaly|requires_human_investigation|unknown","evidence_refs":[],"source_review_refs":[]}]
+  },
+  "human_review_required": [
+    {
+      "trigger": "integrity_anomaly|public_negative_verdict|domain_disagreement|feedback_conflict|rights_or_privacy",
+      "claim_refs": [],
+      "event_refs": [],
+      "reason": "why a human must review this item"
+    }
+  ],
+  "forbidden_inferences": ["fraud_without_formal_investigation"],
+  "rights": {
+    "rights_source_refs": [],
+    "rights_ref": "topic.md#training_rights-or-null",
+    "trace_trainable": null,
+    "human_feedback_trainable": null,
+    "public_release": null,
+    "commercial_use": null,
+    "redaction_required": null
+  }
+}
