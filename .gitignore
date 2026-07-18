@@ -26,7 +26,6 @@ materials/
 *.log
 *.out
 *.pid
-*.lock
 __pycache__/
 *.py[cod]
 .pytest_cache/
