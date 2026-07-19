@@ -468,6 +468,8 @@ dataset-maker 必须为每个候选样本保留：
 
 先在当前 code repo 解析 `policy_version`。若该 commit 不在当前仓库，读取父数据仓库的 `training/policy-version-migrations.jsonl`，按 source policy、role/path 和 prompt hash 找唯一映射；target commit 必须存在于当前 code repo，target prompt 必须通过记录的 SHA-256。只有 `byte_identical` 映射能当作原 prompt 的精确替代；`near_equivalent` 或 `role_inferred` 必须保留迁移说明且不得抬高 label quality。找不到唯一可验证映射就 reject/uncertain，禁止直接拿当前 prompt 猜测。
 
+重建 `state_before.workspace_commit` 或 evidence commit 时，先在当前 nested workspace repo 解析；旧 commit 不存在时，读取父数据仓库 `training/workspace-commit-migrations/<slug>.jsonl`，按 source commit 找唯一 target commit，并重新核对所引用的路径和 hash。找不到唯一可验证映射就 reject/uncertain。
+
 跨 batch 去重的 canonical source signature 固定为 `(sample_type, assessment_domain-or-null, decision_event_id, claim_id-or-null, sorted(human_feedback_refs), sorted(label_source_refs))`。maker/reviewer 都只按这个 exact tuple 判断重复；标签来源改变的后续版本另建 sample ID 并保留 supersedes provenance。dedup 同时扫描整个 `DATA_ROOT/training/**` 的全部 sealed batches 和 canonical current views，不局限当前 case/global scope。
 
 这些 provenance 字段使用如下含义：
