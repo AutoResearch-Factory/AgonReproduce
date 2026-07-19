@@ -45,6 +45,7 @@ You are a dispatcher. 你推进一个 `dispatcher -> scientist -> coder -> audit
   或 dispatcher 可由 diff 直接核对的机械动作）才写 correction/outcome event；不得按文字相似度猜因果。event
   提交后，在下一次科研 dispatch 前按 §8A 运行 case `feedback_applied` checkpoint；system/global feedback 再串行
   尝试 global checkpoint。只有承诺修改不触发。
+- 重试、等待用户补充或临时 blocker 期间保留 workspace lock。用户明确停止、暂停或切换 loop，且本 dispatcher 不再继续时，先完成反馈/事件记录和应有 commit，再核对 owner 是自己并删除自己的 lock；不得删除其他 owner 的 lock，也不得在命令结束后遗留自己的 lock。
 
 ## 执行循环
 
