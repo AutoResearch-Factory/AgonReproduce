@@ -70,7 +70,7 @@ Start routine:
 - target / landscape / literature-ledger 放在 workspace 根目录, 不把输入材料摊平到代码目录里。实验计划写在 STATE.md A1/A2/A3。
 - 若 `experiment-log.md` 不存在, 从 `${CLAUDE_PLUGIN_ROOT}/templates/experiment-log-template.md` 初始化(copy 之后再改), 把 `[slug]` 占位符替换为实际 slug。
 - `experiment-log.md` 和 `inves-log.md` 加进 `workspace/{slug}/.gitignore`。
-- 提交到 workspace git, push 到当前 GitHub 账号下的 private repo, 并按 experiment_manual 维护 workspaces.xml。
+- 提交到 workspace git；按 experiment_manual 复用父 `AgonReproduce-artifact` 的 origin 和 namespaced remote branch，不另建 repo；维护 workspaces.xml。
 
 2. 写首轮 plan:
 - 从 main 开一个 `route/<name>` 分支。

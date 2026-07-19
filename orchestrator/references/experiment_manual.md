@@ -143,6 +143,10 @@ workspace 初始化阶段只写基础字段 (`slug`, `<one-line>`). 实验工厂
 
 - `main` — 已接受的进展, 只通过 merge 写入
 - `route/<route-name>` — 技术路线分支
+- nested repo 复用父 `AgonReproduce-artifact` 的 `origin`，本地 branch 名保持不变，远端 ref 固定为
+  `workspaces/<slug>/<local-branch>`。首次 push 使用
+  `git push -u origin HEAD:refs/heads/workspaces/<slug>/<local-branch>`，并在 nested repo 设置
+  `git config push.default upstream`；不得另建 workspace repo，也不得把 nested `main` 推到 artifact 根 `main`。
 
 操作:
 - 每个新思路(route)从 main 开新分支 `cd workspace/slug`, `git checkout main`, `git checkout -b route/<name>`
