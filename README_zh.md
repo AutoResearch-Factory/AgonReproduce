@@ -79,7 +79,8 @@ Clone `AgonReproduce`，然后创建或 clone 自己的私有 `AgonReproduce-art
 
    ```bash
    cd AgonReproduce-artifact
-   claude --plugin-dir ../AgonReproduce/orchestrator
+   export CLAUDE_PLUGIN_ROOT="$(realpath ../AgonReproduce/orchestrator)"
+   claude --plugin-dir "$CLAUDE_PLUGIN_ROOT"
    ```
 
 5. 把目标论文 brief 写入 `topics/<slug>.md`，然后在 Claude Code 中运行

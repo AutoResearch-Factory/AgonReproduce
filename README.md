@@ -94,7 +94,8 @@ Keep the directories side by side:
 
    ```bash
    cd AgonReproduce-artifact
-   claude --plugin-dir ../AgonReproduce/orchestrator
+   export CLAUDE_PLUGIN_ROOT="$(realpath ../AgonReproduce/orchestrator)"
+   claude --plugin-dir "$CLAUDE_PLUGIN_ROOT"
    ```
 
 5. Put a target-paper brief in `topics/<slug>.md`, then run
