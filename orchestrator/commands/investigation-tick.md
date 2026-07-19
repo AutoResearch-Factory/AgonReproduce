@@ -51,15 +51,16 @@ You are a dispatcher. You run the external reliability investigation loop for on
   - 不初始化 `STATE.md`、`experiment-log.md`、`audits/` 或实验代码骨架; 它们由 experiment factory 首次接管时自己创建。
   - 对已存在的 `topic.md` / `landscape.md` 删除末尾 `<review ...>` 块; 上游历史评审留在 workspace 里会持续误导后续 agent。
   - 确保 `workspace/{slug}/.gitignore` 存在且包含 `experiment-log.md` 和 `inves-log.md`。
-  - 若 `workspace/{slug}/.git` 不存在, 在 workspace 内初始化本地 git repo, 主分支为 `main`。不要在这里创建远端 repo; 远端由后续 experiment scientist 场景 A 接管。
+  - 若 `workspace/{slug}/.git` 不存在, 在 workspace 内初始化本地 git repo, 主分支为 `main`。
   - 用 XML parser 检查父数据 repo 的 `workspace/workspaces.xml`。若没有该 slug, 添加唯一的基础 `<workspace slug="{slug}"><one-line>investigation initialized</one-line></workspace>` 条目；提交时必须获取 training_data_manual §5A 的 data-repo write lock，并使用 `git commit --only -- workspace/workspaces.xml`，不得夹带 index 中其他路径。远端 repo、date 和 cost 字段仍由 experiment scientist/coder 后续扩展；不要手工拼 XML 字符串。
 - 对任何已存在 workspace, 都要补齐 investigation loop 的非 git 持久文件: 若 `inves-log.md` 不存在, 从 `${ROOT}/templates/inves-log-template.md` 初始化; 若文件已存在, 不覆盖。把模板中的 `[slug]` 占位符替换为实际 slug。不要补 `experiment-log.md`; 它属于 experiment factory。
 - 进入任何科研 dispatch 前确保 `workspace/{slug}/materials/` 含 target paper 原始材料：按 `topic.md` 的 exact paper id/version 下载 arXiv e-print 并直接解压到 `materials/`（不重排）；只有 source 不可得时才保存 PDF；非 arXiv 保存可得 PDF/附件；`topic.md` 或 source 明示 GitHub repo 时 clone 到 `materials/repo/`。已有材料不覆盖；下载/解压失败或仍无 source/PDF 时停止。
 - 确保 `workspace/{slug}/.gitignore` 存在且包含 `experiment-log.md` 和 `inves-log.md`。
+- 确认 nested workspace 的 `origin` 复用父 `AgonReproduce-artifact` 的 `origin`，并设置 `git config push.default upstream`。origin 缺失就添加；明显指向其他仓库时停止报告，不擅自改写。
 - investigation loop 只在 nested workspace repo 的 `main` 分支运行, 因为 INVES/landscape 是 workspace 级外部状态, 不能留在可能被放弃的 experiment route 上。若 STATE.md 已存在, 要求当前 git branch 与 STATE.md `git_branch` 都是 `main`; 任一不是时停止并报告, 要求 experiment loop 先到 main checkpoint。若 STATE.md 不存在, 仍要求当前 branch 是 `main`。不擅自 checkout 或 merge。
 - 若 INVES.md 文件开头 metadata 没有 `inves_phase`, 补为 `needs_investigator`; 没有 `inves_iter`, 补为 `0`; 没有 `latest_inves_audit` / `latest_inves_review`, 补为空字符串。若没有 `inves_audit_verdict` / `inves_review_verdict` / `inves_review_score`, 补为空字符串。
 - 若 `workspace/{slug}/landscape.md` 不存在, 把 `inves_phase` 置为 `needs_deeplit`: 初始 landscape 由 `deep-lit-tick --scope investigation` 在 workspace 内生成, 然后再交给 investigator 消费。
-- 进入 Main Loop 前, 在 nested workspace repo 只显式 add 本准备阶段实际创建或修改的 bootstrap/metadata 文件（含新取回的 `materials/`）并提交 `inves bootstrap: {slug}`。已有 repo 的中断恢复也执行这一步；没有 tracked 变化时明确 no-op, 不制造空 commit, 不用 `git add .` 吸收其他改动。
+- 进入 Main Loop 前, 在 nested workspace repo 只显式 add 本准备阶段实际创建或修改的 bootstrap/metadata 文件（含新取回的 `materials/`）并提交 `inves bootstrap: {slug}`。已有 repo 的中断恢复也执行这一步；没有 tracked 变化时明确 no-op, 不制造空 commit, 不用 `git add .` 吸收其他改动。当前 `main` 没有 upstream 时用 `git push -u origin HEAD:refs/heads/workspaces/{slug}/main`，已有 upstream 时正常 push；push attempt 完成后才进入科研 dispatch。
 - bootstrap/branch 检查完成、首个科研 subagent 前，若 `prestart_case_training_backlog=true`，严格按
   training_data_manual §8A 串行运行 case `training-data-tick {slug} recovery`；global lane 也有 pre-existing active
   batch/backlog 时随后运行 `training-data-tick --global recovery`，判断使用
