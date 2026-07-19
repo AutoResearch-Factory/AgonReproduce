@@ -96,12 +96,12 @@ Start routine:
 - Truth assessment: 判断每个重要结果是否可信、是否支持机制解释、是否可能来自 overfitting、leakage、stale data、missing sync、proxy metric、seed luck、统计噪声、baseline 缺失、资源误配或搜索空间缺口。too-good-to-be-true 和离谱负结果都要先当成需要解释的信号。
 - Claim matrix: latest audit 的 Claim-Evidence Entailment 表是权威；复制到 §4.3，或在 A0 明确 disagree。`CONTRADICTED` / `PARTIAL` 不得静默删除，必须留在 §4.2 或 A0。
 - Scientific interpretation: 每个重要发现用 Observation → Interpretation → Alternative explanations → Implication → Next experiment 组织。负结果必须诚实记录为诊断信号, 然后转成能区分解释的实验动作, 不得作为收工理由。
-- Evidence gap selection: 所有可推进的 PARTIAL claim 本轮都必须覆盖，无串行依赖的并行推进。被 §5 硬阻挡的除外。
+- Evidence gap selection: 选择下一轮最能改变 reviewer belief 的 load-bearing gap。优先主实验、强 baseline、关键 ablation、必要 sanity/debug; deadline-critical 或主线缺口不得被 appendix/polish 任务挤到后面。
 - Next-round design: 按 claim/route 的 prior gate evidence 选择当前最低未通过 cost tier；higher tier 只留在 roadmap，当前 gate fail 时只安排同级/更低成本 discrepancy checks。每个 A1 run 必须写清 `Cost tier`、cost cap、`Claim IDs`、要验证的解释、control variables、预设 pass/fail、claim ceiling, 以及 coder 必须使用/产出/同步的 data assets。能并行的 run 分开写, 有依赖的 run 写清依赖。
     **用 Task Group 组织 run**：将互相独立、适合在不同 server 并行推进的 run 归入同一个 group 并标 `can_split: true`（唯一 coder 在远端并行推进）；有依赖或必须共享同一 server 的 run 归入同一个 group 并标 `can_split: false`。写好 `depends_on` 和 `priority`。你不需要知道 GPU 空闲情况，只需要诚实标注 run 之间的依赖和独立度。
 
 决策:
-- 若证据未达到 target standard, 更新 STATE.md, 写下一轮 A1/A2/A3。下一轮 plan 必须直接修补所有可推进的 evidence gap，无依赖的并行推进。不能用 appendix/polish 任务绕开主问题。设置 `phase: coding_and_running`。
+- 若证据未达到 target standard, 更新 STATE.md, 写下一轮 A1/A2/A3。下一轮 plan 必须直接修补当前最 load-bearing 的 evidence gap: 复现/强 baseline/主实验/关键 ablation/sanity/debug/data reconciliation, 不能用 appendix/polish 任务绕开主问题。设置 `phase: coding_and_running`。
 - 只有在主问题仍被直接审查、claim-source binding 清楚、关键 evidence chain / baseline / control / sanity / failure attribution 已过关, 且当前 STATE.md 能支撑一个诚实 reliability verdict profile 时, 才能送审。送审前把已完成 A1/A2 压缩成 reviewer 仍能核对的 immutable run spec、success criterion 和 manifest refs, 保留 A3 collected run 的 id/manifest/phase 索引, 将关键数字和 failure attribution 整合进 §4, 设置 `phase: needs_reviewer` 和 `git_branch: main`, commit 当前 route, merge 到 main 并 push。merge 后确认实际分支与 STATE.md `git_branch` 都是 main。
 
 ## 场景 C: 响应审稿
