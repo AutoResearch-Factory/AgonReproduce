@@ -83,17 +83,17 @@ Clone `AgonReproduce`，然后创建或 clone 自己的私有 `AgonReproduce-art
    ```
 
 5. 把目标论文 brief 写入 `topics/<slug>.md`，然后在 Claude Code 中运行
-   `/investigation-tick <slug>`。
+   `/agon-reproduce:investigation-tick <slug>`。
 
 公开默认配置使用标准 `claude` 和 `codex` CLI。可选的 `deepseek` 和 `kimi` route 分别要求本地提供 `claude-ds` 和 `claude-kimi` 兼容 wrapper。
 
 ## 主要命令
 
-- `/investigation-tick <slug>`：初始化 workspace 并运行 investigation loop。
-- `/experiment-tick <slug>`：运行直接复现和实验审查。
-- `/deep-lit-tick --scope investigation|experiment <slug>`：补充大规模文献证据。
-- `/human-feedback-tick ...`：保存和落实人类纠正。
-- `/training-data-tick <slug> <trigger>`：把固定检查点整理成经过 review 的训练数据。
+- `/agon-reproduce:investigation-tick <slug>`：初始化 workspace 并运行 investigation loop。
+- `/agon-reproduce:experiment-tick <slug>`：运行直接复现和实验审查。
+- `/agon-reproduce:deep-lit-tick --scope investigation|experiment <slug>`：补充大规模文献证据。
+- `/agon-reproduce:human-feedback-tick ...`：保存和落实人类纠正。
+- `/agon-reproduce:training-data-tick <slug> <trigger>`：把固定检查点整理成经过 review 的训练数据。
 
 ## 安全和许可
 

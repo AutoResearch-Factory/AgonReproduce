@@ -98,18 +98,18 @@ Keep the directories side by side:
    ```
 
 5. Put a target-paper brief in `topics/<slug>.md`, then run
-   `/investigation-tick <slug>` inside Claude Code.
+   `/agon-reproduce:investigation-tick <slug>` inside Claude Code.
 
 The public defaults use the standard `claude` and `codex` CLIs. Optional `deepseek` and `kimi`
 routes expect locally supplied Claude-compatible wrappers named `claude-ds` and `claude-kimi`.
 
 ## Main Commands
 
-- `/investigation-tick <slug>` initializes the workspace and runs the investigation loop.
-- `/experiment-tick <slug>` runs direct reproduction and experiment review.
-- `/deep-lit-tick --scope investigation|experiment <slug>` expands the literature evidence.
-- `/human-feedback-tick ...` records and applies human corrections.
-- `/training-data-tick <slug> <trigger>` converts a fixed checkpoint into reviewed dataset rows.
+- `/agon-reproduce:investigation-tick <slug>` initializes the workspace and runs the investigation loop.
+- `/agon-reproduce:experiment-tick <slug>` runs direct reproduction and experiment review.
+- `/agon-reproduce:deep-lit-tick --scope investigation|experiment <slug>` expands the literature evidence.
+- `/agon-reproduce:human-feedback-tick ...` records and applies human corrections.
+- `/agon-reproduce:training-data-tick <slug> <trigger>` converts a fixed checkpoint into reviewed dataset rows.
 
 ## Security
 
