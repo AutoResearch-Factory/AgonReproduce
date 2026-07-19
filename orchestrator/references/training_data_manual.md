@@ -466,6 +466,8 @@ dataset-maker 必须为每个候选样本保留：
 
 “直接训练”要求 model-facing 字段包含实际内容。decision/correction 的 system message 必须从 code repo `policy_version + prompt_path` 重建并通过 `prompt_sha256`；user message、preference prompt 和 verdict `evidence_items/execution_metadata` 必须用 `state_before.workspace_commit`、raw-input snapshots、raw observations 和 immutable artifact refs 重建成足以理解 target 的自包含输入。refs 继续保留在 metadata 供审计，但“见某路径”、模板占位词、当前 prompt、after state 或无法重建的可变文件不能代替训练输入。重建失败就 reject/uncertain。
 
+先在当前 code repo 解析 `policy_version`。若该 commit 不在当前仓库，读取可选的本地文件 `references/policy_archives.local.md`；其中每个非空行是一个历史 Git 仓库的绝对路径。只有恰好一个仓库同时包含该 commit、`prompt_path` 且内容通过 `prompt_sha256` 时才接受；找不到或出现多个不一致结果就 reject/uncertain，禁止用当前 prompt 代替历史 prompt。
+
 跨 batch 去重的 canonical source signature 固定为 `(sample_type, assessment_domain-or-null, decision_event_id, claim_id-or-null, sorted(human_feedback_refs), sorted(label_source_refs))`。maker/reviewer 都只按这个 exact tuple 判断重复；标签来源改变的后续版本另建 sample ID 并保留 supersedes provenance。dedup 同时扫描整个 `DATA_ROOT/training/**` 的全部 sealed batches 和 canonical current views，不局限当前 case/global scope。
 
 这些 provenance 字段使用如下含义：

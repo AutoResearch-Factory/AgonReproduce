@@ -3,6 +3,13 @@ orchestrator/.settings*.toml
 !orchestrator/.settings.example.toml
 orchestrator/references/*.local.md
 orchestrator/references/servers.local.*
+orchestrator/skills/**/SKILL.local.md
+orchestrator/scripts/codex-usage-snapshot.py
+orchestrator/skills/modal-ops/
+orchestrator/skills/server-cuhk/
+orchestrator/skills/server-health/README.md
+orchestrator/skills/server-health/snapshot.py
+orchestrator/skills/server-health/summary.py
 .env
 .env.*
 *.env
@@ -42,6 +49,12 @@ checkpoints/
 data/
 materials/
 .agent-sessions/
+
+# Private working notes retained only on the development machine
+AgonReproduce_system_design_note_v0.md
+capability_improvement_loop_design.md
+investigation_equipment_landscape.md
+stage_audits/
 
 # Local agent discovery and runtime output
 .claude/

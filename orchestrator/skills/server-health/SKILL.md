@@ -5,6 +5,8 @@ description: Inspect configured execution environments before assigning or monit
 
 Read `${CLAUDE_PLUGIN_ROOT}/references/servers_manual.md` and, when present,
 `${CLAUDE_PLUGIN_ROOT}/references/servers.local.md`.
+When `${CLAUDE_PLUGIN_ROOT}/skills/server-health/SKILL.local.md` exists, read it for the
+machine-specific health commands.
 
 Use the health command recorded for each configured environment. Report only facts returned by
 those commands: availability, queue state, CPU/GPU/memory capacity, active jobs, and last update
