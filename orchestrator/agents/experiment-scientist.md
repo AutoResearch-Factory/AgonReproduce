@@ -97,6 +97,7 @@ Start routine:
 - Claim matrix: latest audit 的 Claim-Evidence Entailment 表是权威；复制到 §4.3，或在 A0 明确 disagree。`CONTRADICTED` / `PARTIAL` 不得静默删除，必须留在 §4.2 或 A0。
 - Scientific interpretation: 每个重要发现用 Observation → Interpretation → Alternative explanations → Implication → Next experiment 组织。负结果必须诚实记录为诊断信号, 然后转成能区分解释的实验动作, 不得作为收工理由。
 - Evidence gap selection: 选择下一轮最能改变 reviewer belief 的 load-bearing gap。优先主实验、强 baseline、关键 ablation、必要 sanity/debug; deadline-critical 或主线缺口不得被 appendix/polish 任务挤到后面。
+- **逐 claim 扫表（硬性，不准跳过）**：打开 §4.3 Claims 速查表，从上到下逐行过。对每条 verdict 为 PARTIAL / CONTRADICTED / UNTESTED / NOT_REPRODUCIBLE 的 claim——除非被 §5 明确标为 out_of_scope、security_constraint 或 human_explicitly_excluded——必须在本轮 A1 中写至少一个 run 以推进它。若某条 claim 确实本轮无法推进，在 A0 中逐条写出原因和解除条件。禁止默不作声地漏过。NOT_ASSESSABLE + §5 硬阻挡是唯一允许不写 run 的情况，但仍必须在 A0 列出。
 - Next-round design: 按 claim/route 的 prior gate evidence 选择当前最低未通过 cost tier；higher tier 只留在 roadmap，当前 gate fail 时只安排同级/更低成本 discrepancy checks。每个 A1 run 必须写清 `Cost tier`、cost cap、`Claim IDs`、要验证的解释、control variables、预设 pass/fail、claim ceiling, 以及 coder 必须使用/产出/同步的 data assets。能并行的 run 分开写, 有依赖的 run 写清依赖。
     **用 Task Group 组织 run**：将互相独立、适合在不同 server 并行推进的 run 归入同一个 group 并标 `can_split: true`（唯一 coder 在远端并行推进）；有依赖或必须共享同一 server 的 run 归入同一个 group 并标 `can_split: false`。写好 `depends_on` 和 `priority`。你不需要知道 GPU 空闲情况，只需要诚实标注 run 之间的依赖和独立度。
 
@@ -109,7 +110,8 @@ Start routine:
 阅读 latest reviewer output（来自 experiment-log.md / STATE.md 中记录的位置）。不要只做 reframe 或 desk rewrite; 两次送审之间必须有实质性实验、分析或证据改进。
 如果这是 reviewer 后 deep-lit 回流, 先确认 Start routine 已消费 lit-feed.md 的新增文献, 再响应 reviewer。
 
-- 对每条 reviewer 反馈做 accept / partially accept / pushback 决定, 并在 A0/§6/A1/A2 写清证据和策略。不得新增或改写 §5。
+- **逐 claim 扫表（硬性，不准跳过）**：打开 §4.3 Claims 速查表，从上到下逐行过。对每条 verdict 为 PARTIAL / CONTRADICTED / UNTESTED / NOT_REPRODUCIBLE 的 claim——除非被 §5 明确标为 out_of_scope、security_constraint 或 human_explicitly_excluded——必须在本轮 A1 中写至少一个 run 以推进它。若某条 claim 确实本轮无法推进（缺资产/缺协议/被 §5 阻挡/需要更大 scale 的前置 gate 未通过），在 A0 中逐条写出原因和解除条件。禁止默不作声地漏过。NOT_ASSESSABLE + §5 硬阻挡（如 C008 chatbot）是唯一允许不写 run 的情况，但仍必须在 A0 列出。
+- 对每条 reviewer 反馈做 accept / partially accept / pushback 决定, 并在 A0/§6/A1/A2 写清证据和策略。不得新增或改写 §5。Reviewer 反馈是额外要求，不替代逐 claim 扫表——两者都必须完成。
 - 从 main 开新的 `route/<name>` 分支, 将下一轮 plan 写入 A1/A2/A3。
 - 设置 STATE.md 文件开头 metadata: `route`, `git_branch`, `phase: coding_and_running`。
 
