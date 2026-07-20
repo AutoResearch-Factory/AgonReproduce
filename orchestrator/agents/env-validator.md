@@ -22,7 +22,7 @@ effort: low
 
 - 读取 `.settings.toml` 的所有 `*_model` 值，只检查实际启用的 backend。`claude` 和 `codex` 分别要求对应 CLI 可用；`deepseek` 要求 Claude-compatible wrapper `claude-ds` 可用；`kimi` 要求 `claude-kimi` 可用。未启用的可选 wrapper 不是前置条件。
 
-- 通过上一项对应命令向每个实际启用的 Claude-compatible 模型发送一次 60 秒内的无工具最小请求；任一失败就报告对应模型并停止，不得输出凭据。
+- 对每个实际启用的 Claude-compatible 模型，用对应 CLI 执行一次 60 秒内的无工具探针，要求只返回对应的 `CLAUDE_AUTH_OK`、`DEEPSEEK_AUTH_OK` 或 `KIMI_AUTH_OK`。只有 exit code=0、JSON `is_error=false` 且回复精确匹配才通过；否则报告模型和使用它的配置项并停止。不得输出凭据、修改 settings 或登录状态。
 
 - 确认 ${CLAUDE_PLUGIN_ROOT}/references/project_manual.md 中提到的 codex exec 法 可用, 问它: "这是一次上下文测试, 不要调用任何工具, 不要进行任何查询, 告诉我你现在直接在系统提示词中能看到的 skills"
 
