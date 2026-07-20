@@ -22,6 +22,8 @@ AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它
   -> reviewed training projections
 ```
 
+当前 v0 不包含 report-writing factory。最终文字报告由人类或后续 report agent 根据统一证据账本和两个 domain reviewer 的输出汇总。
+
 两条科研 loop 共用同一个 case workspace，但状态彼此分开：
 
 - `INVES.md` 记录文献、artifact、benchmark、引用关系、适用范围和其他外部可靠性检查。
