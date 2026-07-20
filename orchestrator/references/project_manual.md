@@ -103,7 +103,7 @@ dev/test/unassigned rows 留在不可变 batch history，不进入直接训练�
 默认手续如下。除非人类在 `topics/` 或 `STATE.md §5` 明确改写优先级，agent 不应跳步。
 
 1. 读取 `topics/mmdd-slug.md`，明确目标论文、目标 claim、审查预算、非目标。
-2. 读取目标论文原文和 artifact 线索，不能只凭摘要或二手介绍。当前 v0 自动完整 reader 先支持 arXiv tex；非 arXiv target 必须有明确 arXiv mirror 或 internal source，否则在初始化时报告 capability gap，不伪造 landscape。
+2. 读取目标论文原文和 artifact 线索，不能只凭摘要或二手介绍。deep-lit-reader 精读 arXiv tex；非 arXiv target 由 investigator 读取 `materials/` 中已核验的全文 source/PDF，不伪造 landscape。
 3. 运行 `investigation-tick mmdd-slug`。如果 workspace 还不存在, 它初始化 `workspace/mmdd-slug/`，把目标材料放入 `topic.md`，创建 `INVES.md`，然后先通过 `deep-lit-tick --scope investigation` 生成 workspace 内的 `landscape.md` / 文献 source, 再交给 investigator。loop 不会自停, 直到人类叫停或要求进入实验。
 4. 运行 `experiment-tick mmdd-slug`。它只接管已初始化 workspace，首次进入时由 `experiment-scientist` 场景 A 创建自己的 `STATE.md` 和 `experiment-log.md`，随后按 STATE.md A1/A2/A3 执行复现/验证，保留 auditor、reviewer 和 experiment-scope `needs_litfeed`。
 5. 实验阶段到达人类认可且 nested workspace 已回到 `main` 的检查点后，再运行同一个 `investigation-tick mmdd-slug` 继续 external investigation，重点审查 cherry-pick、overclaim、适用边界、外部反证和实验结果暴露的新风险。investigation 不在可能被放弃的 experiment route 上写 workspace 级外部状态, loop 同样不会自停。

@@ -1,6 +1,6 @@
 <!-- Target-paper topic template. paper-id and a concrete source are required for runtime initialization. -->
 ---
-# 目标论文/案例。当前 v0 自动全文 reader 要求 arXiv ID/明确 arXiv mirror，或填写 internal:<case-id> 并在正文给出本地 source。DOI/OpenReview-only target 先记录 capability gap，不允许只凭摘要启动 claim 审查。
+# 目标论文/案例。填写 arXiv ID、DOI 或 internal:<case-id>；非 arXiv target 必须在正文提供可核验、可打开的全文 source，禁止只凭摘要启动 claim 审查。
 paper-id: ""
 title: ""
 authors: []

@@ -9,7 +9,7 @@ argument-hint: "[--scope topic|experiment|investigation] [slug]"
 - `${CLAUDE_PLUGIN_ROOT}` 由 Claude Code plugin 运行时注入，指向 AgonReproduce 仓库的 `orchestrator/` 目录（含 `agents/` / `commands/` / `skills_aris/` ...）。
 - `${ARXIV_CACHE_DIR}` 是机器上共享的 arxiv 缓存目录（`paper_cache.db` + 下载的 tex）。wiki 不从缓存目录、其他环境变量或默认路径推断；必须使用 `$ARXIV_WIKI_DIR` 指定的位置。
 - arxiv_tool 路径由 `arxiv-tools:arxiv` skill 在开工时给出，下文 `uv run arxiv_tool.py ...` 示例省略绝对路径，实跑时按 skill 输出替换。
-- 当前 v0 deep-lit-reader 的完整逐文件审读路径以 arXiv tex 为准。目标不是 arXiv paper/internal case 且没有可核验的 arXiv mirror 时, 不得假装完成全文审读；明确报告当前 reader capability gap。
+- deep-lit-reader 只精读 arXiv tex。非 arXiv target 由 investigator 打开 bootstrap 已核验的 `materials/` source/PDF；本 tick 不得假装 reader 读过 target。
 
 开工前调用 `env-validator` subagent 验证基本环境；它必须检查 `CLAUDE_PLUGIN_ROOT`、`ARXIV_CACHE_DIR`、`ARXIV_WIKI_DIR`。
 </env>
@@ -62,14 +62,14 @@ Read（cwd 为 AgonReproduce-artifact，下同）。
 
 如果 landscape.md 存在且 frontmatter 含 `mandatory_authors:` 列表，单独提取保存供 A4 axis 7 使用。
 
-### A2.5. 目标论文先读（investigation 首次 landscape 的硬门槛）
+### A2.5. 核验目标论文（investigation 首次 landscape 的硬门槛）
 
-[investigation] 从 `topic.md` frontmatter 读取非空 `paper-id`。若它是 internal case id, 在 landscape 明确记录“无单篇 target paper”, 以 topic 中的本地 source/material 为 target source。否则必须得到可核验的 arXiv ID:
+[investigation] 从 `topic.md` frontmatter 读取非空 `paper-id`:
 
-1. 用 arxiv-tool `info <paper-id>` 核对 title/id；topic 的 title 与返回结果明显不符时停止并报告。
-2. `paper-id` 不是 arXiv ID 时, 用工具核对是否存在明确 arXiv mirror。找不到时停止并报告 `TARGET_FULLTEXT_UNSUPPORTED_BY_V0_READER`, 不从摘要和二手文献伪造 target claim decomposition。
-3. 检查 `$ARXIV_WIKI_DIR/<arxiv_id>.md` 是否已有 `## Read by: <topic_slug>`。没有就按 B5 的 reader model routing 先派一名 `deep-lit-reader` 精读 target, 等 result JSON 和 wiki 都有效后才进入周边文献搜索。target wiki marker 是完成依据；旧 result JSON 存在但 marker 不存在时必须恢复/重跑, 不得只凭 JSON 跳过。
-4. 把 target reader summary 作为初始 landscape 的 target-source 证据；后续 investigator 的 I0 claim decomposition 必须回指 target wiki/原文位置。
+1. 用 arxiv-tool `info <paper-id>` 核对 title/id；直接 DOI lookup 不可用时用 exact-title search 核对 title/DOI。明显不符时停止。
+2. internal case 以 topic 登记的本地 material 为 target source。非 arXiv paper 先查明确 arXiv mirror；没有 mirror 时必须确认 `materials/` 已有可打开的 target source/PDF，记录其路径后继续，target 全文与 I0 由 investigator 首轮亲自读取，禁止从摘要或二手文献代写。
+3. 有 arXiv ID 时，检查 `$ARXIV_WIKI_DIR/<arxiv_id>.md` 的 `## Read by: <topic_slug>`；没有就按 B5 派 `deep-lit-reader`，等 result JSON 和 wiki 有效后再搜索周边文献。
+4. arXiv target 的 I0 回指 target wiki/原文；非 arXiv target 的 I0 回指 `materials/` 原文位置。本 tick 只提供周边文献，不冒充 target reader。
 
 [experiment] 不重复强制读取 target；论文 target 复用 investigation 初始化时产生的 target wiki 和 landscape，internal case 复用 topic 中登记的本地 target source 和 landscape。对应 source handoff 缺失时, 本 tick 失败并要求先修复 investigation 初始化。
 
