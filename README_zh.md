@@ -49,7 +49,6 @@ AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它
 
 - 产品和框架仓库：`AgonReproduce`
 - 私有 case/artifact 仓库：`AgonReproduce-artifact`
-- 公开空 artifact 示例仓库：[`AgonReproduce-artifacts`](https://github.com/AutoResearch-Factory/AgonReproduce-artifacts)
 - Claude Code plugin 和 skill namespace：`agon-reproduce`
 
 小写 namespace 遵循公开版 `Agon` 仓库与 `agon` plugin namespace 的机器命名惯例，不是第二个产品名。
@@ -63,9 +62,10 @@ AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它
 
 ## 启动
 
-Clone `AgonReproduce`，然后根据公开的
-[`AgonReproduce-artifacts`](https://github.com/AutoResearch-Factory/AgonReproduce-artifacts)
-示例创建私有 `AgonReproduce-artifact` 仓库，或者自行建立同样的最小目录骨架。不要把真实案例或凭据放进公开示例仓库。两个目录并列放置：
+Clone `AgonReproduce`。进入公开的
+[`AgonReproduce-artifact-template`](https://github.com/AutoResearch-Factory/AgonReproduce-artifact-template)，
+点击 **Use this template**，创建 private repository，并将它命名为
+`AgonReproduce-artifact`。不要把真实案例或凭据放进公开模板仓库。两个目录并列放置：
 
 ```text
 .

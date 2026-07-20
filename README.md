@@ -62,7 +62,6 @@ The names are fixed:
 
 - product and framework repository: `AgonReproduce`;
 - private case/artifact repository: `AgonReproduce-artifact`;
-- public empty artifact example: [`AgonReproduce-artifacts`](https://github.com/AutoResearch-Factory/AgonReproduce-artifacts);
 - Claude Code plugin and skill namespace: `agon-reproduce`.
 
 The lowercase namespace follows the same machine-name convention as the `Agon` repository and
@@ -77,10 +76,10 @@ Never commit:
 
 ## Setup
 
-Clone `AgonReproduce`, then create a private `AgonReproduce-artifact` repository from the public
-[`AgonReproduce-artifacts`](https://github.com/AutoResearch-Factory/AgonReproduce-artifacts)
-example, or reproduce its small directory skeleton yourself. Do not put real cases or credentials
-in the public example repository.
+Clone `AgonReproduce`. From the public
+[`AgonReproduce-artifact-template`](https://github.com/AutoResearch-Factory/AgonReproduce-artifact-template),
+select **Use this template**, create a private repository, and name it
+`AgonReproduce-artifact`. Do not put real cases or credentials in the public template repository.
 Keep the directories side by side:
 
 ```text
