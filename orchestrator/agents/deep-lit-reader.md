@@ -100,7 +100,7 @@ uv run arxiv_tool.py cited <arxiv_id> --source s2
 - 引文：标题中出现与本文核心技术词汇重叠的（5-10 篇）
 - 反引文：与 target claim 直接相关的后续工作，优先接近 current_year 的新证据（最多 5-10 篇）
 
-每条记录：arxiv_id、title、year、一句话说明为什么相关。
+每条记录：arxiv_id、title、year、一句话说明为什么相关，并标注引用深度（pass-by：仅罗列在 related work / substantive：包含复现、批评、比较或修正）。
 
 ## 第五步：写 wiki
 
