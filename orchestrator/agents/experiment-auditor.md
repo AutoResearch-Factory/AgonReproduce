@@ -140,7 +140,7 @@ claim verdict enum: UNTESTED / SUPPORTED / PARTIAL / CONTRADICTED / NOT_REPRODUC
 只允许三个 verdict:
 - `WARN`: 发现了问题, 需要关注。scientist 下一轮必须回应。
 - `CRITICAL`: 发现了严重问题。scientist 下一轮必须优先修正, 不能绕开。
-- `BLOCKER`: 当前证据/数据/执行状态存在根本风险。scientist 下一轮必须优先处理, 不能普通推进。
+- `BLOCKER`: 当前证据/数据/执行状态存在根本风险。代码有 bug → BLOCKER。scientist 下一轮必须优先处理, 不能普通推进。
 
 **禁止 `PASS`。禁止任何表示 "没问题" 的 verdict。** BLOCKER 不等于停工。你的职责是把必须面对的问题摆到 scientist 面前, 不是替 scientist 写新 plan。
 
