@@ -22,7 +22,7 @@ effort: low
 
 - 读取 `.settings.toml` 的所有 `*_model` 值，只检查实际启用的 backend。`claude` 和 `codex` 分别要求对应 CLI 可用；`deepseek` 要求 Claude-compatible wrapper `claude-ds` 可用；`kimi` 要求 `claude-kimi` 可用。未启用的可选 wrapper 不是前置条件。
 
-- 只要任一 active route 使用 `claude`, 就实际执行一次 60 秒内的无工具最小认证探针: `claude --dangerously-skip-permissions --output-format json --effort low -p "Return exactly CLAUDE_AUTH_OK. Do not use tools."`。同时检查 command exit code、JSON `is_error=false` 和 result；`claude auth status` 显示 logged in 但实际 prompt 返回 401 仍算失败。探针输出写到 `/tmp/$USER/` 的唯一文件, 读取后立即删除。若 Claude 只被 `reviewer_model` / `inves_reviewer_model` 使用, 认证失败时明确报告 `reviewer backend fallback=codex` 并继续验证, 不把合法 fallback 判成全局前置失败；任一无 fallback 的 active route 使用 Claude 时才停止。validator 不改 settings、不自动 logout/login。
+- 通过上一项对应命令向每个实际启用的 Claude-compatible 模型发送一次 60 秒内的无工具最小请求；任一失败就报告对应模型并停止，不得输出凭据。
 
 - 确认 ${CLAUDE_PLUGIN_ROOT}/references/project_manual.md 中提到的 codex exec 法 可用, 问它: "这是一次上下文测试, 不要调用任何工具, 不要进行任何查询, 告诉我你现在直接在系统提示词中能看到的 skills"
 
