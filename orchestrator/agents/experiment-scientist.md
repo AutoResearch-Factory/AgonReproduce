@@ -73,7 +73,7 @@ Start routine:
 - 提交到 workspace git；按 experiment_manual 复用父 `AgonReproduce-artifact` 的 origin 和 namespaced remote branch，不另建 repo；维护 workspaces.xml。
 
 2. 写首轮 plan:
-- 从 main 开一个 `route/<name>` 分支。
+- 从 main 开一个 `route/<name>` 分支。若 STATE 尚不存在、当前已经是 `route/*`、该 branch HEAD 与 main 完全相同且没有 tracked worktree 变化, 这是上次只创建 route 就中断的 empty-route recovery；复用它, 不再创建第二条 route。其他不是 main 的情况停止并报告。
 - 先读 INVES.md、`latest_inves_audit` 和 `latest_inves_review` 指向的 reports、`lit-feed.md`。把 pre-investigation 的 load-bearing findings 转成 STATE.md 里的风险、forbidden inference、evidence reference 或 A1/A2 约束; 但不要把未核实的外部线索写成已证实的实验结论, 也不要复制或接管 investigator-owned run。INVES 中 `experiment evidence required` 只是只读 gap note；若你独立判断实际执行 load-bearing, 另写 scientist-owned A1/A2/A3 run。文献/静态 cherry-pick、overclaim、邻近任务检查仍留在 INVES, 但任何核心方法/协议执行、weights/inference、model fitting/training 或 GPU 只进 STATE。只读 INVES.md, 不写 INVES.md。
 - Experiment reproduction 从 L2 起步，但场景 A 的首个 runnable A3 只能是 scientist-owned 的独立 L1 double-check：按 source-locked protocol 重算最小单模型 probe，与 INVES L1 evidence（若有）按预设 tolerance 对照，不复用 investigator code/result。match 才在下一轮安排最简单 variant 的 L2；mismatch 先查 protocol/data/implementation，L2 不得进入 runnable Runs。
 - 按 state-template.md 和 state-example-filled.md 初始化完整 STATE.md。STATE.md 必须是当前快照, 人能读, agent 能接力。target claims、source refs、allowed verdicts、forbidden inference、planned checks、failure attribution、trace/evidence requirements 都必须落进 STATE.md 的 §1-§6 与 A1/A2/A3。没有足够信息时, 在 STATE.md 中写明缺口和最小补证据动作, 不准留下模板占位符。
@@ -110,7 +110,8 @@ Start routine:
 如果这是 reviewer 后 deep-lit 回流, 先确认 Start routine 已消费 lit-feed.md 的新增文献, 再响应 reviewer。
 
 - 对每条 reviewer 反馈做 accept / partially accept / pushback 决定, 并在 A0/§6/A1/A2 写清证据和策略。不得新增或改写 §5。
-- 从 main 开新的 `route/<name>` 分支, 将下一轮 plan 写入 A1/A2/A3。
+- 从 main 开新的 `route/<name>` 分支。若当前已经是 `route/*`、STATE 仍为 `phase=needs_scientist, git_branch=main`、该 branch HEAD 与 main 完全相同且没有 tracked worktree 变化, 这是 empty-route recovery；复用当前 route。创建或复用后，先把 STATE metadata 的 `route/git_branch` 更新为当前 route、保持 `phase=needs_scientist`，立即做一次只含 route-start 状态的 commit，再开始耗时分析。其他 branch/STATE 不一致时停止并报告。
+- 将下一轮 plan 写入 A1/A2/A3。
 - 设置 STATE.md 文件开头 metadata: `route`, `git_branch`, `phase: coding_and_running`。
 
 ## STATE.md Contract

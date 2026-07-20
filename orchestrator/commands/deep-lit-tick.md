@@ -203,6 +203,7 @@ OUT="/tmp/$USER/<topic_slug>-deep-lit-reader-<arxiv_id>.txt"
 
 - `lit_reader_model = "claude"` (默认): 用 claude 模板.
 - `lit_reader_model = "deepseek"`: 用 claude-* 模板，命令名 `claude-ds`.
+- `lit_reader_model = "kimi"`: 用 claude-* 模板，命令名 `claude-kimi`.
 - `lit_reader_model = "codex"`: 用 codex 模板.
 
 B5 派发 reader 后必须等待所有 subagents 返回，并确认每篇论文的 result JSON 存在且非空。缺失、空文件、缺 wiki/marker 或失败 status 的 reader 在本 tick 内最多恢复/重试 3 次；每次重试前先把错误记入本轮诊断, 再删除会误触发 resume 的失败/stale JSON。3 次后仍失败时, 把该 paper 和错误写入 Errors, 将本 tick 的 termination_reason 置为 `search_failed`, 继续收集其他已成功 reader 以便缓存和集成, 但不得声称本轮 source handoff 成功。禁止在 reader 仍是 Claude Bash 后台任务时输出完成或退出。
