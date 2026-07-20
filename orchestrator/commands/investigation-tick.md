@@ -52,7 +52,7 @@ You are a dispatcher. You run the external reliability investigation loop for on
   - 对已存在的 `topic.md` / `landscape.md` 删除末尾 `<review ...>` 块; 上游历史评审留在 workspace 里会持续误导后续 agent。
   - 确保 `workspace/{slug}/.gitignore` 存在且包含 `experiment-log.md` 和 `inves-log.md`。
   - 若 `workspace/{slug}/.git` 不存在, 在 workspace 内初始化本地 git repo, 主分支为 `main`。
-  - 用 XML parser 检查父数据 repo 的 `workspace/workspaces.xml`。文件缺失时先在 data-repo write lock 内创建合法的空 `<workspaces></workspaces>` 文档；文件存在但 XML 不可解析或根节点不是 `workspaces` 时停止，不覆盖。若没有该 slug, 添加唯一的基础 `<workspace slug="{slug}"><one-line>investigation initialized</one-line></workspace>` 条目；提交时必须获取 training_data_manual §5A 的 data-repo write lock，并使用 `git commit --only -- workspace/workspaces.xml`，不得夹带 index 中其他路径。远端 repo、date 和 cost 字段仍由 experiment scientist/coder 后续扩展；不要手工拼 XML 字符串。
+  - 用 XML parser 检查父数据 repo 的 `workspace/workspaces.xml`。若没有该 slug, 添加唯一的基础 `<workspace slug="{slug}"><one-line>investigation initialized</one-line></workspace>` 条目；提交时必须获取 training_data_manual §5A 的 data-repo write lock，并使用 `git commit --only -- workspace/workspaces.xml`，不得夹带 index 中其他路径。远端 repo、date 和 cost 字段仍由 experiment scientist/coder 后续扩展；不要手工拼 XML 字符串。
 - 对任何已存在 workspace, 都要补齐 investigation loop 的非 git 持久文件: 若 `inves-log.md` 不存在, 从 `${ROOT}/templates/inves-log-template.md` 初始化; 若文件已存在, 不覆盖。把模板中的 `[slug]` 占位符替换为实际 slug。不要补 `experiment-log.md`; 它属于 experiment factory。
 - 进入任何科研 dispatch 前确保 `workspace/{slug}/materials/` 含 target paper 原始材料：按 `topic.md` 的 exact paper id/version 下载 arXiv e-print 并直接解压到 `materials/`（不重排）；只有 source 不可得时才保存 PDF；非 arXiv 保存可得 PDF/附件；`topic.md` 或 source 明示 GitHub repo 时 clone 到 `materials/repo/`。已有材料不覆盖；下载/解压失败或仍无 source/PDF 时停止。
 - 确保 `workspace/{slug}/.gitignore` 存在且包含 `experiment-log.md` 和 `inves-log.md`。

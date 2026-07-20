@@ -28,7 +28,7 @@ You are a dispatcher. 你推进一个 `dispatcher -> scientist -> coder -> audit
 - 阅读 ${ROOT}/references/dispatch_manual.md 理解如何用命令行启动 claude/claude-* 和 codex subagent.
 - 若 `workspace/{slug}/STATE.md` 不存在, 不要创建。首次 STATE.md 初始化属于 `experiment-scientist` 场景 A; 本 dispatcher 将当前 phase 视为 `needs_scientist` 并派 scientist 初始化自己的 STATE.md。
 - 确认 `workspace/{slug}/topic.md` / `landscape.md` / `literature-ledger.md` / `INVES.md` 存在。任一缺失则停下报告具体文件, 要求先运行 `investigation-tick`; 不从 `topics/` 复制, 不创建模板, 不跑 topic-scope deep-lit。实验计划写在 `STATE.md` 的 A1/A2/A3, 不需要单独 plan 文件。
-- 若 STATE.md 已存在, 在 nested workspace repo 检查当前 git branch 与 STATE.md `git_branch` 一致；不一致时停止并报告两个值, 不擅自 checkout 猜测哪一边正确。唯一恢复例外是: `phase=needs_scientist`、STATE 仍写 `git_branch=main`、当前 branch 是 `route/*`、当前 HEAD 与 `main` 完全相同且没有 tracked worktree 变化。这个状态表示 scientist 只创建了 route 就中断；保留当前 branch 并派 scientist 做 empty-route recovery，禁止派其他角色。任一条件不满足仍停止。
+- 若 STATE.md 已存在, 在 nested workspace repo 检查当前 git branch 与 STATE.md `git_branch` 一致；不一致时停止并报告两个值, 不擅自 checkout 猜测哪一边正确。
 - 阅读 ${ROOT}/.settings.toml, 提取 `parallelism` / `coder_model` / `scientist_model` / `auditor_model` / `reviewer_model` / `lit_tick_model`, 并告知用户.
 - 准备检查完成、首个科研 subagent 前，若 `prestart_case_training_backlog=true`，严格按 training_data_manual §8A
   串行运行 case `training-data-tick {slug} recovery`；global lane 也有 pre-existing active batch/backlog 时随后运行
@@ -165,10 +165,8 @@ dispatch subagents 时, 需要告诉它 slug 和这个 slug 的 workspace 路径
    - `reviewer_model = "kimi"`: 按 dispatch_manual 的 claude-* 模板调用 `experiment-reviewer`, 命令名用 `claude-kimi`; 每轮 fresh, 永远不要 resume reviewer.
    - `reviewer_model = "claude"` (默认): 按 dispatch_manual 的 claude 模板调用 `experiment-reviewer`; 每轮 fresh, 永远不要 resume reviewer.
    - `reviewer_model = "deepseek"`: 按 dispatch_manual 的 claude-* 模板调用 `experiment-reviewer`, 命令名用 `claude-ds`; 每轮 fresh, 永远不要 resume reviewer.
-   - `reviewer_model = "codex"`: 按 dispatch_manual 的 codex 模板调用 `experiment-reviewer`; 每轮 fresh, 永远不要 resume reviewer.
 - lit_tick_model: 控制 `deep-lit-tick` dispatcher 使用的模型.
    - `lit_tick_model = "deepseek"`: 按 dispatch_manual 的 claude-* 模板执行, 命令名用 `claude-ds`.
-   - `lit_tick_model = "kimi"`: 按 dispatch_manual 的 claude-* 模板执行, 命令名用 `claude-kimi`.
    - `lit_tick_model = "claude"` (默认): 按 dispatch_manual 的 claude 模板执行.
    - `lit_tick_model = "codex"`: 按 dispatch_manual 的 codex 模板执行.
 - 所有科研 bash 调用返回后都必须完成交接检查: command exit code 为 0, `$OUT` 存在且非空, 读取 `$OUT` 作为该 role 的 subagent report；先按 training_data_manual §5A D 保存原始 output、校验 learning record、append event 并 commit/push 父仓库，再按 dispatcher 规则处理/转述，最后 `rm "$OUT"` 避免 /tmp 堆积。如果 `$OUT` 缺失或为空, 仍写 failed event，再按上方 subagent 失败规则处理。`training-data-tick` 是唯一例外：严格按 §8A 验证 handoff，但不追加 research raw event，避免递归训练自己的整理过程。

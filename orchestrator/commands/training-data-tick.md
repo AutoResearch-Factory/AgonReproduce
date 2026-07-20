@@ -57,8 +57,8 @@ invocation 校验必须在本命令的任何写入之前完成；禁止先把可
 
 读取 project manual、training data manual、dispatch manual、training templates 和 `.settings.toml`。
 
-- maker 使用 `scientist_model`；失败 fallback `claude`；
-- reviewer 使用 `reviewer_model`；失败 fallback codex；
+- maker 使用 `dataset_maker_model`；失败 fallback `codex`；
+- reviewer 使用 `dataset_reviewer_model`；失败 fallback `codex`；
 - backend 只接受 `claude|codex|deepseek|kimi`；
 - reviewer 每轮 fresh，禁止 resume；
 - 不调用 GPT Pro，不增加 liaison；

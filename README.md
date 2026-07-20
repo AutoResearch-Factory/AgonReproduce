@@ -25,9 +25,6 @@ each checkpoint
   -> reviewed training projections
 ```
 
-The current v0 does not include a report-writing factory. A human or a later report agent composes
-the final prose report from the evidence ledger and the two domain-reviewer outputs.
-
 The two research loops share one case workspace but keep separate state:
 
 - `INVES.md` records literature, artifact, benchmark, citation, scope, and other external

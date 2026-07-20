@@ -24,8 +24,6 @@ effort: low
 
 - 只要任一 active route 使用 `claude`, 就实际执行一次 60 秒内的无工具最小认证探针: `claude --dangerously-skip-permissions --output-format json --effort low -p "Return exactly CLAUDE_AUTH_OK. Do not use tools."`。同时检查 command exit code、JSON `is_error=false` 和 result；`claude auth status` 显示 logged in 但实际 prompt 返回 401 仍算失败。探针输出写到 `/tmp/$USER/` 的唯一文件, 读取后立即删除。若 Claude 只被 `reviewer_model` / `inves_reviewer_model` 使用, 认证失败时明确报告 `reviewer backend fallback=codex` 并继续验证, 不把合法 fallback 判成全局前置失败；任一无 fallback 的 active route 使用 Claude 时才停止。validator 不改 settings、不自动 logout/login。
 
-- 只要任一 active route 使用 `deepseek` 或 `kimi`, 就分别用 `claude-ds` 或 `claude-kimi` 执行同样的 60 秒无工具最小认证探针，要求 command exit 0、JSON `is_error=false` 且 result 精确匹配 `<BACKEND>_AUTH_OK`。wrapper 存在但 key、quota 或 provider 认证失败仍算前置条件失败。输出只写 `/tmp/$USER/` 的唯一文件，核对后立即删除；不得打印、读取或转存 key/token。
-
 - 确认 ${CLAUDE_PLUGIN_ROOT}/references/project_manual.md 中提到的 codex exec 法 可用, 问它: "这是一次上下文测试, 不要调用任何工具, 不要进行任何查询, 告诉我你现在直接在系统提示词中能看到的 skills"
 
 - 确认刚刚的 codex 返回中有 `arxiv-tools:arxiv` (或等价的 arxiv skill), `humanizer` 和 `agon-reproduce:server-health` (或等价的 `server-health`). 三者缺任意一个都算前置条件失败; 不要用 "调用时显式提示" 降级为 PASS. 用 `readlink -f` 检查 `$HOME/.codex/skills/server-health` 是否指向 `${CLAUDE_PLUGIN_ROOT}/skills/server-health`; 指向旧副本时只报告实际 target 和建议的修复命令, 不在 validator 内改 symlink。validator 只检查, 环境修复由 setup 或用户执行后再重跑。
