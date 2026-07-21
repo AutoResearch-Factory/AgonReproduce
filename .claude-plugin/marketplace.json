@@ -1,0 +1,14 @@
+{
+  "name": "agon-reproduce",
+  "owner": {
+    "name": "AutoResearch Factory"
+  },
+  "description": "AgonReproduce reliability-audit commands and skills",
+  "plugins": [
+    {
+      "name": "agon-reproduce",
+      "source": "./orchestrator",
+      "description": "AgonReproduce reliability audit orchestrator"
+    }
+  ]
+}

@@ -88,12 +88,23 @@ Keep the directories side by side:
 └── AgonReproduce-artifact/
 ```
 
-1. Create `AgonReproduce/orchestrator/.settings.toml` from
+1. Install the plugin once:
+
+   ```bash
+   claude plugin marketplace add AutoResearch-Factory/AgonReproduce
+   claude plugin install agon-reproduce@agon-reproduce
+   claude plugin details agon-reproduce@agon-reproduce
+   ```
+
+   The component inventory must include `investigation-tick`; restart Claude Code after install or update.
+
+2. Create `AgonReproduce/orchestrator/.settings.toml` from
    `AgonReproduce/orchestrator/.settings.example.toml` and select the available model backends.
-2. Create `AgonReproduce/orchestrator/references/servers.local.md` if remote execution is
+3. Create `AgonReproduce/orchestrator/references/servers.local.md` if remote execution is
    required.
-3. Install the required literature and writing skills listed in `project_manual.md`.
-4. Start Claude Code from the artifact repository:
+4. Install the required literature and writing skills listed in `project_manual.md`.
+5. Start Claude Code from the artifact repository. The installed plugin is loaded automatically;
+   `--plugin-dir` below makes a development checkout use its latest local files immediately:
 
    ```bash
    cd AgonReproduce-artifact
@@ -101,7 +112,7 @@ Keep the directories side by side:
    claude --plugin-dir "$CLAUDE_PLUGIN_ROOT"
    ```
 
-5. Put a target-paper brief in `topics/<slug>.md`, then run
+6. Put a target-paper brief in `topics/<slug>.md`, then run
    `/agon-reproduce:investigation-tick <slug>` inside Claude Code.
 
 The public defaults use the standard `claude` and `codex` CLIs. Optional `deepseek` and `kimi`
