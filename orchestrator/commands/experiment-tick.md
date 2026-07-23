@@ -60,7 +60,7 @@ dispatch subagents 时, 需要告诉它 slug 和这个 slug 的 workspace 路径
 
 如果 scientist/coder 明显消极、畏难或提前退出, 你只做调度层面的短提醒: 继续完成当前角色职责, 不要擅自降级或放弃。科研层面的对抗、施压和鼓励主要交给 auditor/scientist, dispatcher 不展开研究判断.
 
-每次按 phase 派科研 subagent 前，先执行 training_data_manual §8A 的“reviewer 后 dataset 检查”；未通过时只完成或恢复 `training-data-tick`，不派 scientist/coder/auditor/reviewer/deep-lit。
+每次按 phase 派科研 subagent 前必须先通过 training_data_manual §8A 的 dataset 检查；未通过时只完成或恢复 `training-data-tick`。
 
 按 STATE.md frontmatter `phase` 路由；如果 STATE.md 尚不存在, 视为 `needs_scientist`。**dispatcher 不读 §5 战略决策——那个是 auditor 和 scientist 的职责。dispatcher 只按 phase 路由。**
 
@@ -75,7 +75,7 @@ dispatch subagents 时, 需要告诉它 slug 和这个 slug 的 workspace 路径
   6. 一个 workspace 同时只启动一个 coder session。多个 coder 即使处理不同 run, 也会同时改同一个 STATE.md 和 git index, 因此禁止并行 state writers。远端 run 本身仍由这个 coder 并行执行和监控。
   7. 给这个 coder 的 TASK_PROMPT 只列本轮选中的 run、server 和 remote_dir。coder 返回后先检查父数据 repo 的 `workspace/workspaces.xml` / `servers_notes.md`; 有本轮改动时，获取 training_data_manual §5A 的 data-repo write lock，只 add 实际改变的精确路径，并用 `git commit --only -- <这些精确路径>` + push attempt；不得夹带其他 staged 文件。随后重新读取 STATE.md；仍有可推进 run 就继续派下一轮唯一 coder，全部 collected 后才置 `needs_auditor`。
   8. 特殊任务 coder（如检查服务器、清理磁盘）也必须等待当前 workspace coder 退出后再启动，禁止与状态写入并发。
-- `needs_reviewer`: 调用 `experiment-reviewer`. reviewer 无论 verdict 是什么都写 `needs_litfeed`; verdict 只评价当前版本, 不终止 loop. Reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 phase 路由；dataset 检查会先完成 `training-data-tick {slug} experiment_reviewer`，再允许进入 `needs_litfeed`。
+- `needs_reviewer`: 调用 `experiment-reviewer`. reviewer 无论 verdict 是什么都写 `needs_litfeed`; verdict 只评价当前版本, 不终止 loop. Reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 phase 路由；§8A 通过前不得进入 `needs_litfeed`。
 - `needs_litfeed`: 完整跑 `deep-lit-tick --scope experiment <slug>` 到语义收敛或安全上限（见下方「文献补充」）, 写完 lit-feed.md inbox 后置 `needs_scientist`.
 
 同一个 workspace 内, scientist、auditor 和 coder session 都是 singleton。一个 coder session 可管理至多 `parallelism` 个并行远端 run。

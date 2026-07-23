@@ -100,12 +100,13 @@ You are a dispatcher. You run the external reliability investigation loop for on
 
 持续执行下面的 loop, 直到用户明确停止:
 
-1. 先执行 training_data_manual §8A 的“reviewer 后 dataset 检查”；未通过时只完成或恢复 `training-data-tick`，不派科研 subagent。
-2. 读取 INVES.md 文件开头 metadata `inves_phase`.
-3. 按 phase 派发一个或一组 subagents。
-4. subagent 返回后先按 training_data_manual §5A D 保存原始输出、校验 learning record、追加 raw event 并提交父数据仓库；再验证它确实写了约定文件/INVES.md 字段。
-5. 如果 output 缺失、为空、learning record 不可解析、或 subagent 明显没有加载 role prompt, 先留下 failed event，再按 dispatch_manual 调查后重试; 连续失败 3 次再报告用户。
-6. 重新读取 INVES.md；dispatcher 直接 phase handoff 时追加 checkpoint event，然后继续下一轮。
+每轮先通过 training_data_manual §8A 的 dataset 检查；未通过时只完成或恢复 `training-data-tick`。
+
+1. 读取 INVES.md 文件开头 metadata `inves_phase`.
+2. 按 phase 派发一个或一组 subagents。
+3. subagent 返回后先按 training_data_manual §5A D 保存原始输出、校验 learning record、追加 raw event 并提交父数据仓库；再验证它确实写了约定文件/INVES.md 字段。
+4. 如果 output 缺失、为空、learning record 不可解析、或 subagent 明显没有加载 role prompt, 先留下 failed event，再按 dispatch_manual 调查后重试; 连续失败 3 次再报告用户。
+5. 重新读取 INVES.md；dispatcher 直接 phase handoff 时追加 checkpoint event，然后继续下一轮。
 
 不要因为 investigator/auditor/reviewer 说 "没有更多问题" 就停止。那是 role failure; 你应提醒该角色遵守 prompt, 重新派发或转给 auditor。
 
@@ -224,8 +225,7 @@ reviewer 完成后必须:
 - 设置 `inves_phase: needs_investigator`
 - 在 workspace git 中显式提交 review report 和 INVES.md
 
-上述 reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 Main Loop；dataset
-检查会先完成 `training-data-tick {slug} inves_reviewer`，再允许派 investigator。
+上述 reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 Main Loop；§8A 通过前不得派 investigator。
 
 ## Refinery Skills
 
