@@ -93,14 +93,13 @@ You are a dispatcher. You run the external reliability investigation loop for on
 | `coding_and_running` | 只调度 INVES.md I5 中 `owner=investigator` 且 phase 可推进的 run |
 | `needs_auditor` | 派唯一一个 `inves-auditor` |
 | `needs_reviewer` | 派唯一一个 `inves-reviewer` |
+| `needs_dataset` | 完成本轮 reviewer 对应的 dataset batch，再交回 investigator |
 
 合法 per-run phase 沿用 experiment factory: `needs_impl` / `queued` / `running` / `needs_sync` / `needs_fix` / `collected`。
 
 ## Main Loop
 
 持续执行下面的 loop, 直到用户明确停止:
-
-每轮先通过 training_data_manual §8A 的 dataset 检查；未通过时只完成或恢复 `training-data-tick`。
 
 1. 读取 INVES.md 文件开头 metadata `inves_phase`.
 2. 按 phase 派发一个或一组 subagents。
@@ -211,7 +210,7 @@ TASK_PROMPT:
 slug: {slug}, workspace: {workspace}, CLAUDE_PLUGIN_ROOT=${ROOT}.
 training_dir: {TRAINING_DIR}（绝对路径；父数据仓库，只读；禁止写）。
 relevant_human_feedback_refs: [{从上一 reviewer checkpoint 后的相关 HF IDs；没有则为空}]
-请独立评审当前 INVES.md / literature-ledger / wiki / investigator-owned runs / latest audit，只给 INVES-owned investigation domain 打 ready/almost/not_ready verdict 和 0-10 score；不要读取 STATE，不给 experiment domain 或整个项目打分。写 investigations/review_iter*.md，更新 INVES.md I7，设置 inves_phase=needs_investigator。
+请独立评审当前 INVES.md / literature-ledger / wiki / investigator-owned runs / latest audit，只给 INVES-owned investigation domain 打 ready/almost/not_ready verdict 和 0-10 score；不要读取 STATE，不给 experiment domain 或整个项目打分。写 investigations/review_iter*.md，更新 INVES.md I7，设置 inves_phase=needs_dataset。
 refinery mindset: {MANDATORY_SKILLS_LIST}
 ```
 
@@ -222,10 +221,12 @@ reviewer 完成后必须:
 - 更新 metadata `inves_review_verdict`
 - 更新 metadata `inves_review_score`
 - 更新 INVES.md I7
-- 设置 `inves_phase: needs_investigator`
+- 设置 `inves_phase: needs_dataset`
 - 在 workspace git 中显式提交 review report 和 INVES.md
 
-上述 reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 Main Loop；§8A 通过前不得派 investigator。
+### needs_dataset
+
+完整运行 `training-data-tick {slug} inves_reviewer`，直到本轮 reviewer event 已进入 sealed batch；然后把 `inves_phase` 置为 `needs_investigator`，只提交并 push INVES.md 的 phase handoff，按 §5A E 记录 checkpoint event。
 
 ## Refinery Skills
 

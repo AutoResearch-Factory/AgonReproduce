@@ -110,7 +110,7 @@ Then update INVES.md:
 - metadata `inves_review_verdict` = ready / almost / not_ready
 - metadata `inves_review_score` = N
 - I7 with one summary row for this review
-- `inves_phase: needs_investigator`
+- `inves_phase: needs_dataset`
 
 Prepend `inves-log.md` with `[Inves Review]`.
 

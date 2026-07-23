@@ -1,5 +1,5 @@
 ---
-phase: needs_scientist                # dispatcher 状态机: needs_scientist | coding_and_running | needs_auditor | needs_reviewer | needs_litfeed
+phase: needs_scientist                # dispatcher 状态机: needs_scientist | coding_and_running | needs_auditor | needs_reviewer | needs_dataset | needs_litfeed
 version: 0                            # 当前送审次数, reviewer 维护
 iteration: 0                          # 当前迭代号, scientist 维护
 route: ""                             # 当前技术路线 (同 git branch)

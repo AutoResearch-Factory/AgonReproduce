@@ -27,7 +27,7 @@ You are a dispatcher. 你推进一个 `dispatcher -> scientist -> coder -> audit
 - 阅读 ${ROOT}/references/project_manual.md 理解项目结构. 阅读 ${ROOT}/references/experiment_manual.md 理解实验工厂规范, 特别是 frontmatter.phase 和 run.phase 两张状态图.
 - 阅读 ${ROOT}/references/dispatch_manual.md 理解如何用命令行启动 claude/claude-* 和 codex subagent.
 - 确认 `workspace/{slug}/topic.md` / `landscape.md` / `literature-ledger.md` / `INVES.md` 存在。任一缺失则停下报告具体文件, 要求先运行 `investigation-tick`; 不从 `topics/` 复制, 不创建模板, 不跑 topic-scope deep-lit。实验计划写在 `STATE.md` 的 A1/A2/A3, 不需要单独 plan 文件。
-- **Investigation handoff gate（fail closed）**: 读取 INVES frontmatter，要求 `inves_review_verdict=ready`、`latest_inves_review` 非空且文件可打开，且 lit-feed 没有尚未被 investigator 消费的 investigator/both 条目；再用 git 分别取得最近一次修改 `INVES.md` 和该 review 文件的 commit，要求两个非空 hash 完全相同。否则释放本 dispatcher 的 lock 并停止，要求先取得 current investigation review；不要自动重启 investigation。用户调用本命令本身就是“值得且能够做实验”的决定，不创建额外 decision/plan 文件。
+- **Investigation handoff gate（fail closed）**: 读取 INVES frontmatter，要求 `inves_phase=needs_investigator`、`inves_review_verdict=ready`、`latest_inves_review` 非空且文件可打开，且 lit-feed 没有尚未被 investigator 消费的 investigator/both 条目。INVES commit 必须等于 review commit，或是只把 `inves_phase: needs_dataset` 改为 `needs_investigator` 的直接子提交。否则释放本 dispatcher 的 lock 并停止，要求先取得 current investigation review；不要自动重启 investigation。用户调用本命令本身就是“值得且能够做实验”的决定，不创建额外 decision/plan 文件。
 - 若 `workspace/{slug}/STATE.md` 不存在, 要求 nested workspace 当前 branch 是 `main`，然后把 phase 视为 `needs_scientist`，由 `experiment-scientist` 场景 A 初始化自己的 STATE.md。dispatcher 不创建 STATE。
 - 若 STATE.md 已存在, 在 nested workspace repo 检查当前 git branch 与 STATE.md `git_branch` 一致；不一致时停止并报告两个值, 不擅自 checkout 猜测哪一边正确。
 - 阅读 ${ROOT}/.settings.toml, 提取 `parallelism` / `coder_model` / `scientist_model` / `auditor_model` / `reviewer_model` / `lit_tick_model`, 并告知用户.
@@ -60,8 +60,6 @@ dispatch subagents 时, 需要告诉它 slug 和这个 slug 的 workspace 路径
 
 如果 scientist/coder 明显消极、畏难或提前退出, 你只做调度层面的短提醒: 继续完成当前角色职责, 不要擅自降级或放弃。科研层面的对抗、施压和鼓励主要交给 auditor/scientist, dispatcher 不展开研究判断.
 
-每次按 phase 派科研 subagent 前必须先通过 training_data_manual §8A 的 dataset 检查；未通过时只完成或恢复 `training-data-tick`。
-
 按 STATE.md frontmatter `phase` 路由；如果 STATE.md 尚不存在, 视为 `needs_scientist`。**dispatcher 不读 §5 战略决策——那个是 auditor 和 scientist 的职责。dispatcher 只按 phase 路由。**
 
 - `needs_auditor`: 派唯一一个 `experiment-auditor`. auditor 完成后必须把 `phase` 置为 `needs_scientist`.
@@ -75,7 +73,8 @@ dispatch subagents 时, 需要告诉它 slug 和这个 slug 的 workspace 路径
   6. 一个 workspace 同时只启动一个 coder session。多个 coder 即使处理不同 run, 也会同时改同一个 STATE.md 和 git index, 因此禁止并行 state writers。远端 run 本身仍由这个 coder 并行执行和监控。
   7. 给这个 coder 的 TASK_PROMPT 只列本轮选中的 run、server 和 remote_dir。coder 返回后先检查父数据 repo 的 `workspace/workspaces.xml` / `servers_notes.md`; 有本轮改动时，获取 training_data_manual §5A 的 data-repo write lock，只 add 实际改变的精确路径，并用 `git commit --only -- <这些精确路径>` + push attempt；不得夹带其他 staged 文件。随后重新读取 STATE.md；仍有可推进 run 就继续派下一轮唯一 coder，全部 collected 后才置 `needs_auditor`。
   8. 特殊任务 coder（如检查服务器、清理磁盘）也必须等待当前 workspace coder 退出后再启动，禁止与状态写入并发。
-- `needs_reviewer`: 调用 `experiment-reviewer`. reviewer 无论 verdict 是什么都写 `needs_litfeed`; verdict 只评价当前版本, 不终止 loop. Reviewer raw event、workspace handoff 和 parent commit 全部完成后回到 phase 路由；§8A 通过前不得进入 `needs_litfeed`。
+- `needs_reviewer`: 调用 `experiment-reviewer`. reviewer 无论 verdict 是什么都写 `needs_dataset`; verdict 只评价当前版本, 不终止 loop。
+- `needs_dataset`: 完整运行 `training-data-tick {slug} experiment_reviewer`，直到本轮 reviewer event 已进入 sealed batch；然后把 `phase` 置为 `needs_litfeed`，只提交并 push STATE.md 的 phase handoff，按 §5A E 记录 checkpoint event。
 - `needs_litfeed`: 完整跑 `deep-lit-tick --scope experiment <slug>` 到语义收敛或安全上限（见下方「文献补充」）, 写完 lit-feed.md inbox 后置 `needs_scientist`.
 
 同一个 workspace 内, scientist、auditor 和 coder session 都是 singleton。一个 coder session 可管理至多 `parallelism` 个并行远端 run。

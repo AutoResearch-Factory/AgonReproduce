@@ -1,5 +1,5 @@
 ---
-inves_phase: needs_deeplit      # needs_deeplit | needs_investigator | coding_and_running | needs_auditor | needs_reviewer
+inves_phase: needs_deeplit      # needs_deeplit | needs_investigator | coding_and_running | needs_auditor | needs_reviewer | needs_dataset
 inves_iter: 0                   # investigator 维护; auditor/reviewer 使用当前值命名报告
 latest_inves_audit: ""          # 最新 inves-auditor 报告路径
 inves_audit_verdict: ""         # WARN | CRITICAL | BLOCKER

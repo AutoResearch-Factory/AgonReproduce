@@ -234,7 +234,7 @@ Replace the old `<review>` block. STATE.md must contain exactly one review block
 ### 2. Update STATE.md Frontmatter
 
 - `version += 1`.
-- Set `phase: needs_litfeed` for every verdict, including `ready`. `ready` means this version is reportable; it does not authorize stopping the experiment loop. Only the user stops the loop.
+- Set `phase: needs_dataset` for every verdict, including `ready`. `ready` means this version is reportable; it does not authorize stopping the experiment loop. Only the user stops the loop.
 
 ### 3. Prepend Review Entry to experiment-log.md
 

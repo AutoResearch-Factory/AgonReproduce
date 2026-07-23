@@ -19,6 +19,7 @@ VALID_PHASES = {
     "coding_and_running",
     "needs_auditor",
     "needs_reviewer",
+    "needs_dataset",
     "needs_litfeed",
 }
 

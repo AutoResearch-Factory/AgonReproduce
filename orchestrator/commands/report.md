@@ -18,11 +18,13 @@ You are a dispatcher. 你只验证 checkpoint、fresh 调用 `reliability-report
 3. 读取 `.settings.toml` 的 `reviewer_model`，完全复用 `experiment-tick` 的 reviewer routing/fallback。
    Reporter 不需要 env-validator，不探测服务器。
 4. 要求 nested workspace 当前 branch=`main`，tracked worktree clean，`INVES.md` 存在。
-5. 读取 INVES frontmatter，要求 `inves_review_verdict=ready`、`latest_inves_review` 非空且可打开；用
-   `git log -1 --format=%H -- <path>` 分别检查 INVES 和该 review，两个非空 commit 必须相同。
+5. 读取 INVES frontmatter，要求 `inves_phase=needs_investigator`、`inves_review_verdict=ready`、
+   `latest_inves_review` 非空且可打开。INVES commit 必须等于 review commit，或是只把
+   `inves_phase: needs_dataset` 改为 `needs_investigator` 的直接子提交。
 6. 若 STATE 不存在，设 `experiment_status=not_performed`。若 STATE 存在，禁止把它当成“未做实验”：
    要求 frontmatter `git_branch=main`、`phase=needs_litfeed`，文件内恰有一个完整 `<review>...</review>`，
-   verdict=`ready`，且最近一次修改 STATE 的 commit subject 符合 experiment reviewer commit 格式；否则停止。
+   verdict=`ready`。STATE commit 必须是 reviewer commit，或是只把 `phase: needs_dataset` 改为
+   `needs_litfeed` 的直接子提交；否则停止。
 
 任一检查失败时不要创建或覆盖 REPORT。没有 active child 后记录失败并释放自己的 lock。
 

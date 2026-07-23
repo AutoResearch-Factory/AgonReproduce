@@ -180,7 +180,8 @@ frontmatter.phase 枚举:
 | `needs_scientist` | 需要 scientist 分析 / 规划 / 收尾 | 派 scientist |
 | `coding_and_running` | 唯一 coder session 正在写代码、运行或同步一组 run | coder round 结束后进入 `needs_auditor` |
 | `needs_reviewer` | scientist 主动决策送审 | 派 reviewer |
-| `needs_litfeed` | reviewer 刚出 verdict, 需补一轮文献再交回 scientist | 完整跑一次 `deep-lit-tick --scope experiment <slug>` 到语义收敛或安全上限, 写完 lit-feed.md inbox 后置 `needs_scientist` |
+| `needs_dataset` | reviewer 已完成 | 完成本轮 reviewer 对应的 dataset batch 后置 `needs_litfeed` |
+| `needs_litfeed` | dataset 已完成, 需补一轮文献再交回 scientist | 完整跑一次 `deep-lit-tick --scope experiment <slug>` 到语义收敛或安全上限, 写完 lit-feed.md inbox 后置 `needs_scientist` |
 
 frontmatter.phase 状态转移图 (workspace 级):
 
@@ -191,13 +192,14 @@ stateDiagram-v2
     coding_and_running --> needs_auditor: coder round 结束 (全 run collected)
     needs_auditor --> needs_scientist: auditor 完成日常质量审计
     needs_scientist --> needs_reviewer: scientist 主动决策送审
-    needs_reviewer --> needs_litfeed: reviewer 对当前版本给出任意 verdict
+    needs_reviewer --> needs_dataset: reviewer 对当前版本给出任意 verdict
+    needs_dataset --> needs_litfeed: 本轮 reviewer event 已进入 sealed batch
     needs_litfeed --> needs_scientist: dispatcher 跑完 experiment-scope deep-lit, 写满 inbox
 ```
 
-experiment loop 没有 `done` phase。reviewer 的 `ready` 是当前版本的 reportability verdict, 之后仍走 `needs_litfeed -> needs_scientist`; 只有用户能停止 loop。
+experiment loop 没有 `done` phase。reviewer 的 `ready` 是当前版本的 reportability verdict, 之后仍走 `needs_dataset -> needs_litfeed -> needs_scientist`; 只有用户能停止 loop。
 
-`needs_auditor` 是 coder → scientist 的前置门禁。auditor 不替 scientist 返修计划, 但会要求 scientist 下一轮逐条回应 audit findings; 下一轮 auditor 必须检查 scientist 是否回应、coder 是否落实。`needs_litfeed` 在 reviewer → scientist 这条路径上插入文献补充; litfeed 后直接交给 scientist。scientist 和 investigator 开工先看 lit-feed.md；每条用 `intended_reader` + `consumed_by` 维护共享消费状态, `both` 条目必须两者都消费后才能删除。
+`needs_auditor` 是 coder → scientist 的前置门禁。auditor 不替 scientist 返修计划, 但会要求 scientist 下一轮逐条回应 audit findings; 下一轮 auditor 必须检查 scientist 是否回应、coder 是否落实。`needs_dataset` 保存 reviewer 产生的训练数据，`needs_litfeed` 再补充文献并交给 scientist。scientist 和 investigator 开工先看 lit-feed.md；每条用 `intended_reader` + `consumed_by` 维护共享消费状态, `both` 条目必须两者都消费后才能删除。
 
 Runs 的每个 run (experiment-to-run) 有自己的 phase, 由唯一 coder session 消费。dispatcher 不做研究判断, 只用 run.phase 和 active coder session 判断是否还在同一轮 coder round。coder 可并行启动多个互不冲突的远端 run, 但本地状态写入保持串行。
 
@@ -248,7 +250,7 @@ INVES.md 文件开头 metadata:
 
 | 字段 | 维护者 | 含义 |
 |------|--------|------|
-| `inves_phase` | investigator / inves-auditor / inves-reviewer / investigation-tick | needs_investigator / needs_deeplit / coding_and_running / needs_auditor / needs_reviewer |
+| `inves_phase` | investigator / inves-auditor / inves-reviewer / investigation-tick | needs_investigator / needs_deeplit / coding_and_running / needs_auditor / needs_reviewer / needs_dataset |
 | `inves_iter` | investigator | 当前外部审查迭代号; auditor/reviewer 使用当前值命名报告 |
 | `latest_inves_audit` | inves-auditor | 最新 audit report 路径 |
 | `inves_audit_verdict` | inves-auditor | WARN / CRITICAL / BLOCKER |

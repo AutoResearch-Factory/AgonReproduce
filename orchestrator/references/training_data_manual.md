@@ -414,8 +414,6 @@ research dispatcher 只在下列节点触发训练整理：
 5. human feedback 被实际执行并产生 correction/outcome event 后，trigger=`feedback_applied`；
 6. 用户正常暂停，在 pause receipt/checkpoint event 落盘后，trigger=`user_pause`。
 
-**Reviewer 后 dataset 不能跳过**：每次科研 dispatch 前检查 TRAINING 和本域最新 reviewer event 行号。TRAINING 非 `idle` 或有 active batch 时只准 `training-data-tick recovery`；reviewer 行号大于 `raw_trace_cursor` 时只准对应 reviewer trigger。只有 handoff 为 `sealed|no_new_records`、TRAINING 回到 `idle` 且 cursor 已覆盖该行，才继续 STATE/INVES 调度。每轮及重启后都重查。
-
 立即终止不启动 maker/reviewer；先保存 feedback/event，下一次 recovery 补做。普通 role 返回、只收到尚未落实的意见、或训练 batch 自己封存都不递归触发新 batch。
 
 每个 lane 的 prestart flag 必须按同一公式计算，不能只看 phase：
