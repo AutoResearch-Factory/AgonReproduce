@@ -11,8 +11,8 @@ AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它
 ```text
 目标论文
   -> investigation loop
-  -> experiment loop
-  -> investigation loop
+  -> 人类决定是否实验
+     -> 可选 experiment loop
   -> reliability report
 
 每个检查点
@@ -22,12 +22,13 @@ AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它
   -> reviewed training projections
 ```
 
-两条科研 loop 共用同一个 case workspace，但状态彼此分开：
+两个科研阶段共用同一个 case workspace，但状态彼此分开：
 
 - `INVES.md` 记录文献、artifact、benchmark、引用关系、适用范围和其他外部可靠性检查。
 - `STATE.md` 记录直接执行、数值复现、稳健性测试和实验性证据。
 
-两条 loop 都持续运行，直到人类叫停或改变方向。Reviewer 的 `ready` 只是检查点，不会自动终止科研。
+每篇论文都先做 investigation；人类只在实验可行且值得时启动成本更高的 experiment。两个 loop 都由人类
+决定何时停止，最终 reporter 在 reviewed evidence 上只运行一次。
 
 ## 设计原则
 
@@ -87,7 +88,8 @@ Clone `AgonReproduce`。进入公开的
    ```
 
 5. 把目标论文 brief 写入 `topics/<slug>.md`，然后在 Claude Code 中运行
-   `/agon-reproduce:investigation-tick <slug>`。
+   `/agon-reproduce:investigation-tick <slug>`。调查通过 review 后，选择运行
+   `/agon-reproduce:experiment-tick <slug>`，或直接运行 `/agon-reproduce:report <slug>`。
 
 公开默认配置使用标准 `claude` 和 `codex` CLI。可选的 `deepseek` 和 `kimi` route 分别要求本地提供 `claude-ds` 和 `claude-kimi` 兼容 wrapper。
 
@@ -95,6 +97,7 @@ Clone `AgonReproduce`。进入公开的
 
 - `/agon-reproduce:investigation-tick <slug>`：初始化 workspace 并运行 investigation loop。
 - `/agon-reproduce:experiment-tick <slug>`：运行直接复现和实验审查。
+- `/agon-reproduce:report <slug>`：从 reviewed evidence 生成最终可靠性报告。
 - `/agon-reproduce:deep-lit-tick --scope investigation|experiment <slug>`：补充大规模文献证据。
 - `/agon-reproduce:human-feedback-tick ...`：保存和落实人类纠正。
 - `/agon-reproduce:training-data-tick <slug> <trigger>`：把固定检查点整理成经过 review 的训练数据。

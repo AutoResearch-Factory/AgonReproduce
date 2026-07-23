@@ -26,8 +26,9 @@ You are a dispatcher. 你推进一个 `dispatcher -> scientist -> coder -> audit
 - 调用 `env-validator`: workspace_slug_or_path: {workspace_slug_or_path}. 若报告问题, 停下提醒用户.
 - 阅读 ${ROOT}/references/project_manual.md 理解项目结构. 阅读 ${ROOT}/references/experiment_manual.md 理解实验工厂规范, 特别是 frontmatter.phase 和 run.phase 两张状态图.
 - 阅读 ${ROOT}/references/dispatch_manual.md 理解如何用命令行启动 claude/claude-* 和 codex subagent.
-- 若 `workspace/{slug}/STATE.md` 不存在, 不要创建。首次 STATE.md 初始化属于 `experiment-scientist` 场景 A; 本 dispatcher 将当前 phase 视为 `needs_scientist` 并派 scientist 初始化自己的 STATE.md。
 - 确认 `workspace/{slug}/topic.md` / `landscape.md` / `literature-ledger.md` / `INVES.md` 存在。任一缺失则停下报告具体文件, 要求先运行 `investigation-tick`; 不从 `topics/` 复制, 不创建模板, 不跑 topic-scope deep-lit。实验计划写在 `STATE.md` 的 A1/A2/A3, 不需要单独 plan 文件。
+- **Investigation handoff gate（fail closed）**: 读取 INVES frontmatter，要求 `inves_review_verdict=ready`、`latest_inves_review` 非空且文件可打开，且 lit-feed 没有尚未被 investigator 消费的 investigator/both 条目；再用 git 分别取得最近一次修改 `INVES.md` 和该 review 文件的 commit，要求两个非空 hash 完全相同。否则释放本 dispatcher 的 lock 并停止，要求先取得 current investigation review；不要自动重启 investigation。用户调用本命令本身就是“值得且能够做实验”的决定，不创建额外 decision/plan 文件。
+- 若 `workspace/{slug}/STATE.md` 不存在, 要求 nested workspace 当前 branch 是 `main`，然后把 phase 视为 `needs_scientist`，由 `experiment-scientist` 场景 A 初始化自己的 STATE.md。dispatcher 不创建 STATE。
 - 若 STATE.md 已存在, 在 nested workspace repo 检查当前 git branch 与 STATE.md `git_branch` 一致；不一致时停止并报告两个值, 不擅自 checkout 猜测哪一边正确。
 - 阅读 ${ROOT}/.settings.toml, 提取 `parallelism` / `coder_model` / `scientist_model` / `auditor_model` / `reviewer_model` / `lit_tick_model`, 并告知用户.
 - 准备检查完成、首个科研 subagent 前，若 `prestart_case_training_backlog=true`，严格按 training_data_manual §8A

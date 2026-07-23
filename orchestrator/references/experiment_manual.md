@@ -13,7 +13,7 @@
 本项目中的“内部实验复现”和“外部可靠性审查”既规定问题及其状态所有权, 也规定 investigation 的硬执行上限。evidence 来自论文内部还是互联网、代码在本机还是远端都不改变这个上限。后续 prompt 中的 `internal` / `external` 必须按下面的定义理解:
 
 - **experiment domain (`STATE.md`-owned, 内部实验复现)**: 直接执行、复现或重建目标论文明确声称的方法、数据、协议、表格、图和指标, 判断 target claim 在记录清楚的 artifact / environment / budget 下得到什么结果, 并区分 paper claim、artifact、环境、数据、metric、our bug、budget 和 unknown failure attribution。
-- **investigation domain (`INVES.md`-owned, 外部可靠性审查)**: 轻量、快速的外部核查。像考官拿到一张考卷——不做题，只用心算、常识、极端情况检查和经验来快速判断试卷质量。具体手段包括：跨文献 triangulation（后续论文支持/反驳、独立复现/失败复现、repo/issue/社区争议）、数据自洽性心算（论文自己的数字能否互相印证、table 和 figure 是否自洽）、常识压力测试（声称的效应量在已知的 embedding distribution 下是否 plausible、有无 trivial alternative explanation）、artifact 静态审计（代码/data/model 是否存在、版本是否匹配、checklist 是否诚实）、overclaim 措辞审计（paper actually says vs implies vs reader may infer）。**investigation 不实现也不要求 coder 实现论文的核心算法。不跑论文的实验。不训练模型。不下载模型权重做 inference。这些属于 experiment domain。** investigation 只做静态的、聪明的、快速的外部核查。差的论文在这一步就应该被筛掉，只有真正 solid 的才进入 experiment loop。
+- **investigation domain (`INVES.md`-owned, 外部可靠性审查)**: 轻量、快速的外部核查。像考官拿到一张考卷——不做题，只用心算、常识、极端情况检查和经验来快速判断试卷质量。具体手段包括：跨文献 triangulation（后续论文支持/反驳、独立复现/失败复现、repo/issue/社区争议）、数据自洽性心算（论文自己的数字能否互相印证、table 和 figure 是否自洽）、常识压力测试（声称的效应量在已知的 embedding distribution 下是否 plausible、有无 trivial alternative explanation）、artifact 静态审计（代码/data/model 是否存在、版本是否匹配、checklist 是否诚实）、overclaim 措辞审计（paper actually says vs implies vs reader may infer）。**investigation 不实现也不要求 coder 实现论文的核心算法。不跑论文的实验。不训练模型。不下载模型权重做 inference。这些属于 experiment domain。** 所有案例先做 investigation；只有仍有重要未决 claim、技术上可执行且成本值得时，人类才启动 experiment。
 
 **Investigation execution ceiling（hard）**: investigation 是“考官模式”：读、对照、心算/公式推演、极端情况与 self-consistency 检查, 以及 bounded CPU/API 的静态取证。I5 只允许 URL/API/repo/issue/model-card/data-card/metadata/hash/license/version 检查、已有小文件扫描、reported-number / paper-provided small-data 重算（可写代码）和不加载权重的纯 CPU tokenizer inspection。无论检查目的为何, 都禁止在 investigation 中实现或执行目标论文的核心算法/方法/实验协议、下载 model/checkpoint weights、运行 inference、拟合或训练任何模型（包括 LR/SVM/MLP）以及使用 GPU。若一个问题只有这些工作才能回答, 只在 INVES.md 记为 `not assessed: experiment evidence required` 并说明准确缺口；不创建 I5, 不修改 STATE.md, 不新增 handoff phase/queue。
 
@@ -43,14 +43,14 @@
 1. 直接回答“目标论文明确写出的 claim 按其方法和协议实际执行后是否成立”时, 归 experiment domain。即使需要查论文、下载公开 artifact、读取外部文献或调用网络服务, 归属不变。
 2. 回答“其他研究和 artifact 如何评价它”“它是否只在被挑选的 seed/config/dataset/PDE 上成立”“generality 或 overclaim 风险如何”时, 问题属于 investigation domain, 但只能用上述轻量证据动作回答；需要禁项时保留为 bounded unknown, 不转成 investigator-owned run。
 3. 运行官方代码复现论文表格属于 experiment domain；审计 repo release/issue/config 缺失如何影响 artifact reliability 属于 investigation domain。复现论文明确声称覆盖的多个 PDE 属于 experiment domain；从文献和静态 artifact 检查邻近 PDE 的覆盖/overclaim 属于 investigation domain, 实际在邻近 PDE 上执行目标方法仍属于 experiment domain。
-4. 两个 domain 共享 workspace 和底层 evidence, 但不共享状态所有权。角色只写自己 domain 的状态文件和日志；读取另一状态文件只作背景。需要把另一 domain 的 finding 用进本 domain 时, 必须在自己的状态文件引用准确 evidence path, 不复制、接管或改写对方的 run。
+4. 两个 domain 共享 workspace 和底层 evidence, 但按 `INVES -> STATE` 单向交接且不共享状态所有权。investigation 先完成，不读取 STATE；experiment 后进入，读取 INVES 并在 STATE 引用准确 evidence path，不复制、接管或改写 investigator-owned run。
 5. 两个 reviewer 分别出分。experiment-reviewer 的 `ready` 只表示 STATE-owned reproduction profile 已可报告；inves-reviewer 的 `ready` 只表示当前 INVES-owned investigation profile 已可报告。任何一个 verdict 都不是整个 AgonReproduce 项目的全局 verdict, 两个分数不得互相替代或擅自求平均。
-6. 最终 report writer 从 STATE review 和 INVES review 分别取材并处理二者之间的关系。在 report writer 实现前, 任何 reviewer 都不得自称全局最终评分层。
+6. reliability-reporter 从 current INVES review 和可选的 current STATE review 取材并处理二者关系。任何 domain reviewer 都不得自称全局最终评分层，也不得把两个 readiness score 求平均。
 
 两个 domain 共享 claim identity，但不共享状态 ownership：
 
-- 目标论文同一条显式 claim 在 STATE/INVES 都使用同一个稳定 `C<number>`；同 ID 必须绑定相同核心 claim text 和
-  source_ref。先创建 claim matrix 的角色分配 ID，后进入的角色读取并复用，禁止各自重新从 C1 编号。
+- investigator 先在 INVES I0 为目标论文显式 claim 分配稳定 `C<number>`；scientist 后进入时读取并复用。同 ID
+  必须绑定相同核心 claim text 和 source_ref，禁止在 STATE 重新从 C1 编号。
 - 只用于 overclaim、隐含 generality 或外部关系的 investigation claim 使用 `IC<number>`；只用于执行拆解、metric/
   implementation 子目标的 experiment claim 使用 `EC<number>`。domain-only ID 不冒充共享 target claim。
 - ID 一旦进入 git/trace 就不重编号。发现同 ID 不同 claim 时，当前状态 owner 先修自己的映射并留下 audit note；
@@ -84,7 +84,9 @@ dataset-maker/reviewer 构成独立的 training-data loop：maker 写 candidate�
 training-data dispatcher 独占 BATCH/TRAINING control 并提交。它们与科研 subagent 串行并沿用同一个 workspace lock，
 workspace 全部只读。`sealed` 只属于一个 training batch，不是 research phase，也不写入 STATE/INVES。
 
-两条 loop 的交接点固定在 nested workspace 的 `main`。investigation-tick 只在 `main` 运行, 使 INVES、landscape 和 investigation evidence 成为所有后续 experiment route 的共同基线, 不会留在被放弃的 `route/*` 上。experiment loop 内部继续按原机制使用 route branch；切回 investigation 前必须先由 experiment loop 到达 `git_branch: main` 的 checkpoint, dispatcher 不替 scientist checkout 或 merge。
+流程单向通过 nested workspace 的 `main` 交接。investigation-tick 只在 `main` 运行，使 reviewed INVES、landscape
+和 investigation evidence 成为所有 experiment route 的共同基线。experiment loop 内部继续使用 route branch；
+最终报告只能读取已经回到 `git_branch: main` 的 reviewed checkpoint。流程不返回 investigation。
 
 scientist 及其团队 (coder) 用 git branch 管理不同实验路线 — 一条 route 写在一个 `route/<name>` branch 上, 尝试过的方向多了, git graph 会长成一棵分叉树 (成功的 route 会 merge 回 main).
 
@@ -102,6 +104,7 @@ experiment-log.md 和 inves-log.md 都是把 git graph 按时间倒序展平的�
 workspace/slug/                               ← 独立 git repo
 ├── STATE.md                                  ← 内部实验复现状态, experiment dispatcher 的状态读入
 ├── INVES.md                                  ← 外部可靠性审查状态, investigation dispatcher 的状态读入
+├── REPORT.md                                 ← reliability-reporter 生成的当前 reviewed snapshot
 ├── topic.md                                  ← 目标论文/案例 brief, 从 topics/ copy, read-only
 ├── materials/                                ← target paper 原始 source/PDF；可含 `repo/`
 ├── experiment-log.md                         ← NOT in git, 跨 branch 持久, 时间倒序 append
@@ -262,7 +265,11 @@ INVES.md body:
 | I6 | investigator-owned coder | 临时 coder notes, investigator 消化后整理进 I2/I4/I5 |
 | I7 | inves-reviewer | 外部可靠性 review 摘要; 完整 review 存在 `investigations/review_*.md` |
 
-INVES.md 引用 STATE.md / results 作为上下文, 但不能修改 STATE.md。STATE.md 引用 INVES 的 load-bearing finding 来约束 inference 或 reportability, 不复制、改写或接管 investigator-owned run。INVES 中的 `experiment evidence required` 只是只读 gap note；scientist 独立判断实际执行是否 load-bearing, 若要执行则按 experiment-domain 定义另建自己的 A1/A2/A3 run。scientist/coder 不写 INVES.md。investigator-owned run 的输出写入 `results/inves_<...>/`, scientist-owned run 禁止使用这个前缀, 防止两条 loop 的证据文件互相覆盖。
+INVES.md 在 experiment 之前完成，不读取 STATE.md。STATE.md 后进入并引用 INVES 的 load-bearing finding 来约束
+实验与 reportability，不复制、改写或接管 investigator-owned run。INVES 中的 `experiment evidence required`
+只是只读 gap note；scientist 独立判断是否执行，并按 experiment-domain 定义另建 A1/A2/A3 run。
+scientist/coder 不写 INVES.md。investigator-owned run 输出写入 `results/inves_<...>/`，scientist-owned run
+禁止使用这个前缀。
 
 ## Logs 格式
 

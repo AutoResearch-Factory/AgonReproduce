@@ -18,12 +18,11 @@ INVES.md —— investigation domain 的可靠性审查状态与计划文件
 INVES.md 只记录 investigation domain：文献关系、artifact/data/benchmark 异常、cherry-pick、overclaim、
 适用边界、后续论文支持/反驳、社区复现/issue、investigator-owned runs。
 
-STATE.md 是平级的 experiment domain 直接实验复现状态, 由 scientist/experiment-auditor/experiment-reviewer/experiment loop 维护。
-INVES.md 和 STATE.md 平级。INVES.md 读取 STATE.md 作为上下文，并把 claim boundary 修改建议写在 I0/I2/I4，
-但不得直接改 STATE.md 的 §4.3 / §5 / A1-A3。
+INVES.md 是第一阶段的完整调查状态，不读取后续 experiment domain 的 STATE.md。它先为目标论文 claim
+建立稳定 C ID；scientist 进入实验后读取并复用。
 
-这个 loop 不分 pre/post mode, 不宣布 done。investigator 根据当前 INVES / STATE / results /
-audit / review / deep-lit/wiki 自己判断下一轮该查什么。新 workspace 首轮先跑 needs_deeplit,
+这个 loop 不宣布 done。investigator 根据当前 INVES / 本域 results / audit / review / deep-lit/wiki
+判断下一轮该查什么。新 workspace 首轮先跑 needs_deeplit,
 由 deep-lit-tick 直接根据 topic.md 搜索并写 landscape.md, 然后 investigator 再消费这些 source。
 
 只有 bounded CPU/API 静态取证需要 coder 时, investigator 才在 I4/I5 加 run。核心方法/协议执行、
@@ -43,9 +42,9 @@ investigator 直接调用 deep-lit-reader 精读关键论文；需要系统性�
 | claim_ref | claim text / implied claim | source_ref | stated scope | possible overclaim / ambiguity | investigation checks |
 |-----------|----------------------------|------------|--------------|--------------------------------|-----------------|
 
-<!-- investigator 首轮填写。目标论文显式 claim 使用共享稳定 C<number>；若 STATE 已存在必须复用其同 claim ID。
-implicit generality/overclaim 等 investigation-only claim 使用 IC<number>。同 ID 必须绑定同一核心 claim text/source_ref，
-不得重编号。正式 §4.3 claim matrix 由 scientist/reviewer 主线维护；I0 可给出修改建议, 不直接改 §4.3。 -->
+<!-- investigator 首轮填写并为目标论文显式 claim 分配稳定 C<number>；后续 scientist 原样复用。
+implicit generality/overclaim 等 investigation-only claim 使用 IC<number>。同 ID 必须绑定同一核心 claim
+text/source_ref，不得重编号。 -->
 
 ## I1. Investigation Questions
 

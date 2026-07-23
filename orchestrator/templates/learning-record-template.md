@@ -6,7 +6,7 @@
 模板字符串中的 `a|b|c` 只表示允许值列表。实际输出必须选一个值，禁止把带 `|` 的整串照抄进记录。
 `</learning_record>` 必须是最终回复最后一个非空白内容；closing tag 后禁止追加总结、签名或任何文字。
 
-## Scientist / Investigator
+## Scientist / Investigator / Reliability reporter
 
 ```text
 <learning_record>
@@ -14,7 +14,8 @@
 </learning_record>
 ```
 
-只在创建 run、请求 deep-lit、选择调查轴、改变归因、送审或改变 claim 判断时填写多个 alternatives。
+只写真正考虑过的 alternatives；没有就写空数组。Reporter 用同一格式记录最终 score/label 决定，
+domain reviewer 的 readiness score 不能冒充该决定。
 
 ## Shared coder
 

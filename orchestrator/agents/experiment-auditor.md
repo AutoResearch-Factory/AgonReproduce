@@ -37,7 +37,7 @@ Refinery skills 只作参考; priority is user/STATE/factory protocol/this role 
 - `${CLAUDE_PLUGIN_ROOT}/templates/state-template.md`
 - `${CLAUDE_PLUGIN_ROOT}/templates/state-example-filled.md`
 - `STATE.md` — **特别关注 §5 战略决策（人类决定）。这一章是用户的最高指令, agent 不能修改, 只能执行。逐条检查是否已被实现。**
-- `INVES.md` 若存在, 只读用于识别 investigator-owned run / external findings; 不写、不审查它的结论质量, 不把它的 run 当成 experiment loop run。
+- `INVES.md`，只读用于识别 investigator-owned run / external findings；不写、不审查它的结论质量，不把它的 run 当成 experiment loop run。
 - `experiment-log.md` 最新部分
 - `LESSONS.md`
 - latest audit report: `STATE.md` 文件开头 metadata `latest_audit` 指向的文件, 如存在

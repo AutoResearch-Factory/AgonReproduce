@@ -1,6 +1,6 @@
 # AgonReproduce 训练数据手册
 
-本手册规定 investigation / experiment 运行时如何把科研过程保存为可核查、可训练的数据。它只定义数据生产和整理，不改变两条科研 loop 的职责，也不授予任何科研 Agent 自行停止的权限。
+本手册规定 investigation / experiment / report 如何把科研过程保存为可核查、可训练的数据。它只定义数据生产和整理，不改变科研角色职责，也不授予任何科研 Agent 自行停止 loop 的权限。
 
 ## 0. 三分钟读懂整个机制
 
@@ -27,10 +27,11 @@ dataset loop 只整理一段已经发生的历史。它不继续查论文、不�
 
 1. inves reviewer 完成；
 2. experiment reviewer 完成；
-3. human feedback 已经被实际落实；
-4. 用户正常暂停；
-5. 异常恢复发现记录尚未整理；
-6. 人类手动触发。
+3. reliability reporter 完成；
+4. human feedback 已经被实际落实；
+5. 用户正常暂停；
+6. 异常恢复发现记录尚未整理；
+7. 人类手动触发。
 
 ### maker 和 reviewer 要转几轮
 
@@ -62,7 +63,7 @@ maker 修正 + 另一轮 fresh reviewer
 
 | 数据 | 学什么 |
 |------|--------|
-| decision SFT | 在当时状态下，下一步应该做什么 |
+| decision SFT | 在当时状态下，应该做什么或怎样判断 |
 | human correction SFT | 原行为收到人类纠正后，正确改法是什么 |
 | preference | 面对同一目标，哪个行为更好 |
 | verdict | 给定 claim 和 evidence，四个可靠性字段怎样判断 |
@@ -173,13 +174,14 @@ AgonReproduce-artifact/
 
 | 角色 | 必须产生的内容 | 禁止事项 |
 |------|----------------|----------|
-| investigation / experiment dispatcher | dispatch 客观信息、prompt/model/policy 版本、状态前后 hash、subagent 原始输出及其 `learning_record`、human feedback 原文 | 不替科研角色编造理由、preferred behavior 或结论 |
+| investigation / experiment / report dispatcher | dispatch 客观信息、prompt/model/policy 版本、状态前后 hash、subagent 原始输出及其 `learning_record`、human feedback 原文 | 不替科研角色编造理由、preferred behavior 或结论 |
 | scientist / investigator | 在最终回复中返回关键决策 `learning_record` | 不直接写 training 目录 |
 | shared coder | 在最终回复中返回执行结果 `learning_record` | 不把执行失败解释成论文 verdict；不直接写 training 目录 |
 | auditor | 在最终回复中返回因果审计 `learning_record` | 不把自己的判断冒充 known answer；不直接写 training 目录 |
 | domain reviewer | 在最终回复中返回正交 reliability fields 和 review `learning_record` | 不把 0-10 readiness score 当可靠性真值；不直接写 training 目录 |
+| reliability reporter | 返回最终 score/label 的 decision `learning_record` | 不把报告冒充 known answer 或第三个 domain verdict；不直接写 training 目录 |
 | deep-lit tick | 返回本轮 source discovery/read/integration 摘要，由外层 dispatcher 记录 | 不直接写 training 目录 |
-| dataset-maker | 读取 raw records，生成批次训练文件、待审 current projection、case reliability projection、dataset card 和 prompt patch candidates | 不修改 canonical current、科研 evidence、STATE、INVES、results、audits、review/control files、git index 或 live prompts |
+| dataset-maker | 读取 raw records，生成批次训练文件、待审 current projection、case reliability projection、dataset card 和 prompt patch candidates | 不修改 canonical current、科研 evidence、STATE、INVES、REPORT、results、audits、review/control files、git index 或 live prompts |
 | dataset-reviewer | 逐条写 `accept/fix/reject/uncertain` 审查结果 | 不替 maker 静默改样本；不修改 candidate、control、科研文件或 git index |
 | training-data dispatcher | 固定 batch range，调度 maker/reviewer，保存角色原始输出，独占更新 BATCH/TRAINING，并在 seal 时原样发布 reviewed current projection | 不生成/修改 sample 语义，不把整理过程追加进 research raw trace |
 
@@ -209,6 +211,7 @@ reject:   RJ-<UTC timestamp>-<short suffix>
 - coder 的执行或阻塞结果；
 - auditor 的因果审计；
 - reviewer 的机器判断；
+- reporter 的最终可靠性判断；
 - deep-lit 的一轮大规模 source 补充；
 - human feedback 的接收、应用和验证；
 - loop 切换、用户暂停和训练批次 checkpoint。
@@ -223,7 +226,7 @@ dispatcher 在删除临时 `$OUT` 前，先把它逐字复制到 `training/<slug
 
 ## 5A. Dispatcher 怎样保存每次科研调用
 
-investigation-tick 和 experiment-tick 必须逐步执行本节，不得各自发明另一套格式。
+investigation-tick、experiment-tick 和 report 必须逐步执行本节，不得各自发明另一套格式。
 
 ### A. Case 初始化
 
@@ -290,7 +293,7 @@ auditor/reviewer 必须读相关 raw events 和 feedback receipts；其他角色
 
 1. 记录 command exit status 和结束时间。失败也必须留下 raw event。
 2. 在删除临时 `$OUT` 前，将其逐字复制为 `training/<slug>/raw-outputs/<DSP-ID>.out`。禁止清洗、覆盖或只存摘要。
-3. 先按实际 backend 取得 normalized final message：Claude/`claude-*` 的 `$OUT` 是 JSON wrapper，使用 `jq -r '.result'` 读取最终回复并同时读取真实 session/usage 字段；Codex `--output-last-message` 的 `$OUT` 是纯文本，直接读取。原始 wrapper/text 仍保持不变。然后检查 normalized final message 恰有一个 `<learning_record>`，提取标签之间的单行 JSON 并用 `jq -e .` 验证；再检查 `record_type` 与 actor role相符；review record 还必须满足 experiment-reviewer -> `assessment_domain=experiment`、inves-reviewer -> `assessment_domain=investigation`。experiment 每个 profile 的 `source_domain_verdict` 必须是对应 STATE 7 值之一；investigation 每个 profile 必须为 JSON `null`。closing tag 必须是 normalized final message 的最后一个非空白内容。检查所有枚举字段都选了单个合法值；任一枚举字段仍含模板分隔符 `|` 时拒绝该 record，不能只验证 JSON syntax 和 `record_type`。普通摘要或 command 字符串中的 shell pipe 不适用这条检查。
+3. 先按实际 backend 取得 normalized final message：Claude/`claude-*` 的 `$OUT` 是 JSON wrapper，使用 `jq -r '.result'` 读取最终回复并同时读取真实 session/usage 字段；Codex `--output-last-message` 的 `$OUT` 是纯文本，直接读取。原始 wrapper/text 仍保持不变。然后检查 normalized final message 恰有一个 `<learning_record>`，提取标签之间的单行 JSON 并用 `jq -e .` 验证；再检查 `record_type` 与 actor role相符（scientist/investigator/reporter=`decision`，coder=`execution`，auditor=`audit`，reviewer=`review`，deep-lit=`source_discovery`）；review record 还必须满足 experiment-reviewer -> `assessment_domain=experiment`、inves-reviewer -> `assessment_domain=investigation`。experiment 每个 profile 的 `source_domain_verdict` 必须是对应 STATE 7 值之一；investigation 每个 profile 必须为 JSON `null`。closing tag 必须是 normalized final message 的最后一个非空白内容。检查所有枚举字段都选了单个合法值；任一枚举字段仍含模板分隔符 `|` 时拒绝该 record，不能只验证 JSON syntax 和 `record_type`。普通摘要或 command 字符串中的 shell pipe 不适用这条检查。
 4. learning record 缺失/损坏但科研输出有效时，要求同一个 subagent 只补交 record，把补交原文另存 `<DSP-ID>-record-repair.out`；dispatcher 禁止替它编写。补交仍失败则把本 dispatch 标为 failed，按原 subagent failure 规则重试新的 dispatch。
 5. 重读 load-bearing 文件并记录 after workspace git HEAD、after SHA-256、真实 commit refs、artifact/evidence refs 和可实测成本。learning record 引用、但不能从 after commit 或 immutable artifact ref 重建的非 git outcome text/config/log，复制到 `raw-inputs/<DSP-ID>/after/` 并写 `state_after.snapshot_refs`；没有这类文件就写空数组。`state_before/state_after` 的 commit、refs、hashes、snapshot refs 必须能区分，不拿 after 文件冒充 before context。
 6. 按 `raw-event-template.jsonl` 在临时文件生成一行，`jq -e .` 通过后一次性 append 到 raw trace。科研角色语义只来自原 learning record；dispatcher 只补客观字段。
@@ -407,8 +410,9 @@ research dispatcher 只在下列节点触发训练整理：
 1. 写启动 receipt 前分别记录 case/global 既有 phase/cursors/line counts，形成两个 prestart backlog flags；workspace/bootstrap 完成、首个科研 subagent 前，只有启动消息到来前已经存在 active batch 或 cursor backlog 的 lane 才 trigger=`recovery`。本次启动消息留给后续正常 checkpoint，不能仅因刚写了一条“启动 loop”receipt 就制造零信息 recovery batch；
 2. experiment-reviewer event 完整落盘后，trigger=`experiment_reviewer`；
 3. inves-reviewer event 完整落盘后，trigger=`inves_reviewer`；
-4. human feedback 被实际执行并产生 correction/outcome event 后，trigger=`feedback_applied`；
-5. 用户正常暂停，在 pause receipt/checkpoint event 落盘后，trigger=`user_pause`。
+4. reporter event 和 REPORT commit 完整落盘后，trigger=`reporter`；
+5. human feedback 被实际执行并产生 correction/outcome event 后，trigger=`feedback_applied`；
+6. 用户正常暂停，在 pause receipt/checkpoint event 落盘后，trigger=`user_pause`。
 
 立即终止不启动 maker/reviewer；先保存 feedback/event，下一次 recovery 补做。普通 role 返回、只收到尚未落实的意见、或训练 batch 自己封存都不递归触发新 batch。
 
@@ -422,7 +426,7 @@ prestart_backlog =
   OR human_feedback_cursor < human_feedback_line_count
 ```
 
-source 文件不存在时对应 line count 为 0。deep-lit/investigator/scientist/coder/auditor 普通返回不立即切 batch 是刻意设计：等待 domain reviewer 才能把 decision -> execution -> audit -> outcome 放进同一 fixed batch；raw trace 已经逐事件提交，不会因延迟转换而丢失，异常由 recovery、正常中断由 user_pause 兜底。
+source 文件不存在时对应 line count 为 0。deep-lit/investigator/scientist/coder/auditor 普通返回不立即切 batch是刻意设计：等待 domain reviewer 才能把 decision -> execution -> audit -> outcome 放进同一 fixed batch。Reporter 是一次性终点，返回后立即 checkpoint。raw trace 已经逐事件提交，不会因延迟转换而丢失，异常由 recovery、正常中断由 user_pause 兜底。
 
 每次 checkpoint 必须在没有 active research subagent 时串行执行。case lane 沿用 parent workspace lock，TASK_PROMPT 传 lock path、owner 全文和 parent dispatcher session；training child 验证后不得释放它。global lane 另取 global lock。一个 checkpoint 同时有 case/global 新记录时，先 case、后 global，不能并行启动两个 maker/reviewer loop。
 
@@ -442,7 +446,7 @@ CLAUDE_PLUGIN_ROOT: <absolute ROOT>
 
 子命令 output 必须 exit 0、非空；按 §5A D 的 backend 规则先规范化 Claude JSON wrapper / Codex text，再确认 normalized final message 末尾只有一个可解析 `<training_batch_handoff>`。case handoff 后再次核对 parent lock owner 未变、workspace 没有 training child 增量；global handoff 核对 global lock 已由 child 正确释放。失败按 training-data-tick 的 active batch 恢复协议 fresh 重试，同一 blocker 连续三次才询问用户。
 
-科研 dispatcher 不把 training-data-tick、maker 或 dataset-reviewer 的输出追加到 research `raw-trace.jsonl`，也不把它们当科研 phase。BATCH/review/attempt outputs 已经保存转换 provenance。batch sealed 或 no_new_records 后，原 investigation/experiment phase 原样继续；reviewer 的训练 checkpoint 不能替代后续 lit-feed/investigator。
+科研 dispatcher 不把 training-data-tick、maker 或 dataset-reviewer 的输出追加到 research `raw-trace.jsonl`，也不把它们当科研 phase。BATCH/review/attempt outputs 已经保存转换 provenance。batch sealed 或 no_new_records 后，原 investigation/experiment phase 原样继续；reporter checkpoint 后 report 命令结束。训练 checkpoint 不替代科研调度。
 
 system/global feedback 实际应用后，同一 checkpoint 先处理 case application event，再运行 `--global feedback_applied`。启动和正常暂停时，如果 global TRAINING 有 active batch 或 global cursor 后有记录，也在 case checkpoint 后运行 global recovery/user_pause；没有 global 新记录时不创建空 batch。
 
@@ -483,7 +487,7 @@ dataset-maker 必须为每个候选样本保留：
 
 训练文件模板：
 
-- `decision-sft-template.jsonl`：状态到下一步行动；
+- `decision-sft-template.jsonl`：状态到决定、判断或下一步行动；
 - `human-correction-sft-template.jsonl`：旧行为、人类纠正、修正后行为；
 - `preference-template.jsonl`：同一可见上下文下的 chosen/rejected；
 - `verdict-template.jsonl`：claim + evidence 到正交可靠性判断；
@@ -524,6 +528,9 @@ maker/reviewer 的原始输出按唯一 attempt ID 保存在 `batches/<batch-id>
 `forbidden_inferences` 由 dataset-maker 按当前证据填写，dataset-reviewer 核对。每条 verdict 和 reliability result 至少保留 `fraud_without_formal_investigation`；执行失败却没有 paper-claim evidence 时，再加入 `paper_claim_from_execution_failure`。它列的是当前证据禁止推出的结论，不是 target label，也不能因为数组存在就暗示论文有 integrity 问题。
 
 `reliability-result.json` 是跨批次当前投影，不是第三个 scientific reviewer。每个 claim 的 `assessments[]` 和每个 profile dimension 的条目分别保留 `assessment_domain=experiment|investigation`；新 batch 只更新同对象、同 domain 的条目，另一 domain 及未重审 claim/profile 保留，并累计 source batch refs。maker 禁止求平均、互相覆盖或发明 overall verdict；两个 domain 冲突进入 `human_review_required`。
+
+Reporter event 可生成普通 decision candidate，但不是第三个 domain verdict，不更新 `reliability-result.json`
+的两域 assessments。`REPORT.md` 是当前证据的可读裁决，不是 hidden gold。
 
 claim identity 先遵守 experiment manual：共享 target claim 用 `C*`，investigation-only 用 `IC*`，experiment-only 用 `EC*`。同一个 `C*` 只有在核心 claim text 和 source_refs 跨 STATE/INVES 一致时才 merge；同 ID 不同 claim 是 schema conflict，相关 verdict 进入 rejected，reliability result 标 human review，不能靠 assessment_domain 掩盖碰撞。
 

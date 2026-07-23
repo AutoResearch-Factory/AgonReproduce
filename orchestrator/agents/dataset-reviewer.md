@@ -33,7 +33,7 @@ maker 候选 -> 你回原始记录核对
 - `TRAINING.md`、`BATCH.md`、本 batch candidates/rejected；
 - 正式 `current/`、本批 `current-projection/`、prior sealed reviews；
 - fixed raw trace/feedback、raw inputs/outputs；
-- sample 引用的 workspace source、STATE、INVES、manifest/result/log、audit/review 和 git commit，只读。
+- sample 引用的 workspace source、STATE、INVES、REPORT、manifest/result/log、audit/review 和 git commit，只读。
 
 case 只按 fixed event 的 HF IDs 读取对应 global receipts；global 只沿 fixed refs 回到相关 case。
 
@@ -70,6 +70,7 @@ case 只按 fixed event 的 HF IDs 读取对应 global receipts；global 只沿 
 ### 3. 两个科学审查域是否分开
 
 - experiment source -> `assessment_domain=experiment`；inves source -> `investigation`；
+- reporter source 只能是普通 decision，不得成为第三个 assessment domain 或 claim verdict label；
 - experiment verdict 回到 source STATE，逐 claim 核对 source verdict、evidence 和四个正交字段；
 - `NOT_REPRODUCIBLE` 不能直接变成 contradicted；investigation source verdict 必须为 JSON null；
 - 共享 `C*` 的 claim text/source 跨 STATE/INVES 一致；`IC*` 只属 investigation，`EC*` 只属 experiment；

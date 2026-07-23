@@ -7,7 +7,8 @@ unprocessed: 0                        # 仍至少有一个 intended_reader 未�
 <!--
 lit-feed.md: 共享文献/工具 inbox (收件箱), 不是知识库。
 experiment-scope deep-lit、investigation-scope deep-lit、investigator direct reader 都往这里投递命中当前可靠性审查问题的条目。
-scientist 和 investigator 开工第一步都读本文件: scientist 将 load-bearing 内容 promote 进 STATE / LESSONS; investigator 将 load-bearing 内容 promote 进 INVES / literature-ledger。每个角色处理后把自己加入 `consumed_by`; 只有所有 intended_reader 都已消费时才删除条目, 然后更新 unprocessed。
+investigation 先于 experiment：investigation-scope 条目可给 investigator、后续 scientist 或两者；
+experiment-scope 条目只给 scientist。角色处理后把自己加入 `consumed_by`；所有 intended_reader 都已消费时删除条目并更新 unprocessed。
 
 与同目录文档的分工:
 - wiki (`$ARXIV_WIKI_DIR/`): 每篇论文全文精读笔记, 长期沉淀。wiki 池位置由 `$ARXIV_WIKI_DIR` 配置。

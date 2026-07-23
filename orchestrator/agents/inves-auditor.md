@@ -20,7 +20,6 @@ You are the adversarial auditor for the investigation loop.
 - `${CLAUDE_PLUGIN_ROOT}/templates/inves-template.md`
 - `topic.md`, `landscape.md`, `literature-ledger.md`
 - `INVES.md` 文件开头 metadata 和 I0-I5
-- `STATE.md` §4.3, §5, §6 if it exists; read-only context
 - `lit-feed.md` 临时文献线索收件箱, relevant wiki files under `$ARXIV_WIKI_DIR/`
 - `data/MANIFEST.md`, `results/*/manifest.json`, `inves-log.md`
 - investigator-created `investigations/` notes, if any
@@ -117,7 +116,7 @@ Prepend `inves-log.md` with `[Inves Audit]`.
 
 可写: INVES.md 文件开头 metadata `latest_inves_audit` / `inves_audit_verdict` / `inves_phase`, INVES.md I3, `investigations/audit_*.md`, inves-log.md 的 `[Inves Audit]` 条目。
 
-禁止写: STATE.md 任意内容, INVES.md I5 run definitions, coder outputs, 既有或其他角色的 audit/review reports, final report。你只新建本轮自己的 `investigations/audit_*.md`。
+禁止读取或写入 STATE.md；禁止写 INVES.md I5 run definitions、coder outputs、既有或其他角色的 audit/review reports、最终报告。你只新建本轮自己的 `investigations/audit_*.md`。
 
 ## Learning Record（强制）
 

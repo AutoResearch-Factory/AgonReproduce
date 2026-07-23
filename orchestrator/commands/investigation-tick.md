@@ -57,7 +57,7 @@ You are a dispatcher. You run the external reliability investigation loop for on
 - 进入任何科研 dispatch 前确保 `workspace/{slug}/materials/` 含 target paper 原始材料：按 `topic.md` 的 exact paper id/version 下载 arXiv e-print 并直接解压到 `materials/`（不重排）；只有 source 不可得时才保存 PDF；非 arXiv 保存可得 PDF/附件；`topic.md` 或 source 明示 GitHub repo 时 clone 到 `materials/repo/`。已有材料不覆盖；下载/解压失败或仍无 source/PDF 时停止。
 - 确保 `workspace/{slug}/.gitignore` 存在且包含 `experiment-log.md` 和 `inves-log.md`。
 - 确认 nested workspace 的 `origin` 复用父 `AgonReproduce-artifact` 的 `origin`，并设置 `git config push.default upstream`。origin 缺失就添加；明显指向其他仓库时停止报告，不擅自改写。
-- investigation loop 只在 nested workspace repo 的 `main` 分支运行, 因为 INVES/landscape 是 workspace 级外部状态, 不能留在可能被放弃的 experiment route 上。若 STATE.md 已存在, 要求当前 git branch 与 STATE.md `git_branch` 都是 `main`; 任一不是时停止并报告, 要求 experiment loop 先到 main checkpoint。若 STATE.md 不存在, 仍要求当前 branch 是 `main`。不擅自 checkout 或 merge。
+- investigation loop 只在 nested workspace repo 的 `main` 分支、且 STATE.md 尚未创建时运行。当前 branch 不是 `main` 或已存在 STATE.md 时停止；流程不会从 experiment 返回 investigation。不擅自 checkout、merge 或删除 STATE。
 - 若 INVES.md 文件开头 metadata 没有 `inves_phase`, 补为 `needs_investigator`; 没有 `inves_iter`, 补为 `0`; 没有 `latest_inves_audit` / `latest_inves_review`, 补为空字符串。若没有 `inves_audit_verdict` / `inves_review_verdict` / `inves_review_score`, 补为空字符串。
 - 若 `workspace/{slug}/landscape.md` 不存在, 把 `inves_phase` 置为 `needs_deeplit`: 初始 landscape 由 `deep-lit-tick --scope investigation` 在 workspace 内生成, 然后再交给 investigator 消费。
 - 进入 Main Loop 前, 在 nested workspace repo 只显式 add 本准备阶段实际创建或修改的 bootstrap/metadata 文件（含新取回的 `materials/`）并提交 `inves bootstrap: {slug}`。已有 repo 的中断恢复也执行这一步；没有 tracked 变化时明确 no-op, 不制造空 commit, 不用 `git add .` 吸收其他改动。当前 `main` 没有 upstream 时用 `git push -u origin HEAD:refs/heads/workspaces/{slug}/main`，已有 upstream 时正常 push；push attempt 完成后才进入科研 dispatch。
@@ -84,7 +84,7 @@ You are a dispatcher. You run the external reliability investigation loop for on
 
 ## Loop State
 
-`inves_phase` 是 INVES.md 文件开头 metadata 里的调度标签, 不是 pre/post mode。investigator 自己根据当前 INVES/STATE/results/wiki/audit/review 判断该查什么。
+`inves_phase` 是 INVES.md 文件开头 metadata 里的调度标签。investigator 根据当前 INVES、本域 results、wiki、audit 和 review 判断该查什么。
 
 | inves_phase | dispatcher action |
 |---------------------|-------------------|
@@ -120,7 +120,7 @@ TASK_PROMPT:
 slug: {slug}, workspace: {workspace}, CLAUDE_PLUGIN_ROOT=${ROOT}.
 training_dir: {TRAINING_DIR}（绝对路径；父数据仓库，只读；禁止写）。
 relevant_human_feedback_refs: [{本轮明确转发的 HF IDs；没有则为空}]
-你处在 investigation loop 的考官模式。先读 materials 中的 target source 做 L0，再读取 INVES/STATE/results/wiki/lit-feed/latest audit/latest review。I5 可写 L1 小代码，但只限 paper-reported/provided small data；核心方法/协议实现或执行、weights、inference、任何模型训练/拟合和 GPU 一律只在 INVES 记为 experiment evidence required, 不创建 run。需要论文级证据时直接调用 deep-lit-reader；需要大规模搜索时请求 needs_deeplit；需要过程审计时请求 needs_auditor；外部可靠性 profile 成型后请求 needs_reviewer。
+你处在 investigation loop 的考官模式。先读 materials 中的 target source 做 L0，再读取 INVES、本域 results、wiki、lit-feed、latest audit/review；不要读取 STATE。I5 可写 L1 小代码，但只限 paper-reported/provided small data；核心方法/协议实现或执行、weights、inference、任何模型训练/拟合和 GPU 一律只在 INVES 记为 experiment evidence required, 不创建 run。需要论文级证据时直接调用 deep-lit-reader；需要大规模搜索时请求 needs_deeplit；需要过程审计时请求 needs_auditor；外部可靠性 profile 成型后请求 needs_reviewer。
 refinery mindset: {MANDATORY_SKILLS_LIST}
 ```
 
@@ -209,7 +209,7 @@ TASK_PROMPT:
 slug: {slug}, workspace: {workspace}, CLAUDE_PLUGIN_ROOT=${ROOT}.
 training_dir: {TRAINING_DIR}（绝对路径；父数据仓库，只读；禁止写）。
 relevant_human_feedback_refs: [{从上一 reviewer checkpoint 后的相关 HF IDs；没有则为空}]
-请独立评审当前 INVES.md / literature-ledger / wiki / investigator-owned runs / latest audit, 只给 INVES-owned investigation domain 打 ready/almost/not_ready verdict 和 0-10 score。STATE 只作只读背景, 不给 experiment domain 或整个项目打分。写 investigations/review_iter*.md, 更新 INVES.md I7, 设置 inves_phase=needs_investigator。
+请独立评审当前 INVES.md / literature-ledger / wiki / investigator-owned runs / latest audit，只给 INVES-owned investigation domain 打 ready/almost/not_ready verdict 和 0-10 score；不要读取 STATE，不给 experiment domain 或整个项目打分。写 investigations/review_iter*.md，更新 INVES.md I7，设置 inves_phase=needs_investigator。
 refinery mindset: {MANDATORY_SKILLS_LIST}
 ```
 
@@ -260,13 +260,14 @@ training_data_manual §8A 串行运行 `training-data-tick {slug} inves_reviewer
   用户要求立即终止时不启动 training-data maker，只保证原始 feedback/event 已落盘；下次 recovery 整理。
 - `active subagent` 用可观察状态判断：本 dispatcher 启动的 CLI PID/session 仍在运行，或 deep-lit 仍有未返回 reader。收到停止指令后不再派新任务；要求当前本地 subagent 完成最小 handoff 或显式中断并记 failed event。已登记 session/job/manifest 的远端 run 可继续，不算本地 active subagent。禁止仅凭“应该结束了”释放 lock。
 - investigation loop 不能改 `phase`; 那是 experiment loop 的状态。
+- investigation loop 及其所有角色不读取 STATE.md；STATE 出现后不得再次进入 investigation。
 - experiment loop 不能读取或调度 INVES.md I5 run。
 - investigator-owned coder 不能写 STATE.md; scientist-owned coder 不能写 INVES.md。
 - coder 不能写 INVES 结论; investigator 消费 coder evidence 后再写结论; auditor/reviewer 只写审计/评审区。
 - investigator 直接调用 `deep-lit-reader` 读取自己认为该读的论文; 大规模搜索、引用/反引文扫盘、候选发现和 saturation 必须走 `deep-lit-tick --scope investigation`, 且该 tick 必须严格按 deep-lit prompt 大规模执行。
 - inves-auditor 不能直接调用 deep-lit-reader; 它需要文献时只能要求 investigator 点读或要求下一轮 `needs_deeplit`。
 - inves-reviewer 不继续调查、不跑代码、不写最终报告; 它只打外部可靠性 profile 的 verdict/score。
-- investigation loop 不写最终报告, 不替 final report writer。
+- investigation loop 不写最终报告, 不替 reliability-reporter。
 - 如果任一 agent 暗示 investigation 已完成、收工、没有更多检查, 视为 role failure, 需要重新派发或交给 auditor, 并要求它从 citation graph / artifact / benchmark / protocol / overclaim / cherry-pick 轴里选下一条具体检查。
 
 ## If mcp-communicator-telegram is available

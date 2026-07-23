@@ -14,8 +14,8 @@ assessments, not automatic findings of misconduct.
 ```text
 target paper
   -> investigation loop
-  -> experiment loop
-  -> investigation loop
+  -> human experiment decision
+     -> optional experiment loop
   -> reliability report
 
 each checkpoint
@@ -25,15 +25,16 @@ each checkpoint
   -> reviewed training projections
 ```
 
-The two research loops share one case workspace but keep separate state:
+The two research stages share one case workspace but keep separate state:
 
 - `INVES.md` records literature, artifact, benchmark, citation, scope, and other external
   reliability checks.
 - `STATE.md` records direct execution, numerical reproduction, robustness tests, and experiment
   evidence.
 
-Both loops continue until a human stops or redirects them. Reviewer readiness is a checkpoint,
-not an automatic terminal state.
+Investigation runs first for every paper. A human starts the more expensive experiment stage only
+when it is feasible and worthwhile. Each loop continues until a human stops it; the final reporter
+runs once on reviewed evidence.
 
 ## Design
 
@@ -96,7 +97,7 @@ Keep the directories side by side:
    claude plugin details agon-reproduce@agon-reproduce
    ```
 
-   The component inventory must include `investigation-tick`; restart Claude Code after install or update.
+   The component inventory must include `investigation-tick` and `report`; restart Claude Code after install or update.
 
 2. Create `AgonReproduce/orchestrator/.settings.toml` from
    `AgonReproduce/orchestrator/.settings.example.toml` and select the available model backends.
@@ -113,7 +114,9 @@ Keep the directories side by side:
    ```
 
 6. Put a target-paper brief in `topics/<slug>.md`, then run
-   `/agon-reproduce:investigation-tick <slug>` inside Claude Code.
+   `/agon-reproduce:investigation-tick <slug>` inside Claude Code. After a reviewed investigation,
+   either run `/agon-reproduce:experiment-tick <slug>` or go directly to
+   `/agon-reproduce:report <slug>`.
 
 The public defaults use the standard `claude` and `codex` CLIs. Optional `deepseek` and `kimi`
 routes expect locally supplied Claude-compatible wrappers named `claude-ds` and `claude-kimi`.
@@ -122,6 +125,7 @@ routes expect locally supplied Claude-compatible wrappers named `claude-ds` and 
 
 - `/agon-reproduce:investigation-tick <slug>` initializes the workspace and runs the investigation loop.
 - `/agon-reproduce:experiment-tick <slug>` runs direct reproduction and experiment review.
+- `/agon-reproduce:report <slug>` writes the final reliability report from reviewed evidence.
 - `/agon-reproduce:deep-lit-tick --scope investigation|experiment <slug>` expands the literature evidence.
 - `/agon-reproduce:human-feedback-tick ...` records and applies human corrections.
 - `/agon-reproduce:training-data-tick <slug> <trigger>` converts a fixed checkpoint into reviewed dataset rows.

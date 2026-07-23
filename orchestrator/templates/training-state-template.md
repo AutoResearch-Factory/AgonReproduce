@@ -9,7 +9,7 @@ human_feedback_source: "human-feedback.jsonl"  # global: training/global-human-f
 raw_trace_cursor: 0                 # 已封存的 raw-trace.jsonl 行数
 human_feedback_cursor: 0            # 已封存的 human-feedback.jsonl 行数
 active_batch_id: ""
-active_trigger: ""                 # experiment_reviewer | inves_reviewer | user_pause | feedback_applied | recovery | manual
+active_trigger: ""                 # experiment_reviewer | inves_reviewer | reporter | user_pause | feedback_applied | recovery | manual
 maker_round: 0
 reviewer_round: 0
 latest_review: ""

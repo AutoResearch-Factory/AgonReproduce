@@ -8,21 +8,22 @@
 
 一个目标论文/目标案例会经历:
 
-`topic brief --> investigation workspace init + investigation deep-lit landscape --> investigator planning/checks --> experiment loop --> investigation post-loop --> report`
+`topic brief --> investigation loop --> human experiment decision --> optional experiment loop --> report`
 
 在 AgonReproduce 里，这些阶段的含义是:
 
 - `topic brief`: 人类给定的目标论文/目标案例 brief，不是开放式选题。
 - `reliability landscape`: 可靠性背景和前置证据图谱，包括目标论文、相关复现、代码/数据/benchmark、已知争议和可用审查工具。
-- `workspace`: 单个目标论文/案例的执行目录，内含 topic、landscape、STATE、INVES、文献总账、实验代码和结果。实验计划分别写在 INVES.md 和 STATE.md。
+- `workspace`: 单个目标论文/案例的执行目录，内含 topic、landscape、INVES、可选的 STATE、文献总账、代码和结果。调查计划写在 INVES.md；进入实验后，实验计划写在 STATE.md。
 - `experiment`: 在服务器/workspace 中执行验证计划，收集 manifest、trace、日志、结果和失败证据。
 - `investigation`: 围绕同一个 workspace 做外部可靠性审查，包括文献关系、artifact/data/benchmark 线索、cherry-pick、overclaim、适用边界、后续支持/反驳和社区复现/issue。
 - `report`: 诚实可靠性报告。目标是说明哪些 claim 被支持、部分支持、反驳、不可判定，以及为什么；不是包装性叙事。
 
-对应这些步骤，项目分为 **experiment factory** 和 **investigation loop**:
+对应这些步骤，项目分为 **investigation loop**、可选的 **experiment factory** 和一次性的 **reliability reporter**:
 
-- investigation loop 是 workspace 初始化入口。第一次运行时, 它从 `topics/<slug>.md` 准备 workspace 并初始化 `INVES.md`; 初始 `landscape.md` 由 `deep-lit-tick --scope investigation` 在 workspace 内生成, 然后 investigator 消费这些 source 并规划/整合外部检查。它不分 pre/post mode，而是根据当前 INVES、STATE、results、deep-lit/wiki、audit 和 review 反馈自己判断下一轮该查什么。结构上平行于 experiment loop: deep-lit 先提供大规模文献 source, investigator 消费 source 并规划/整合外部检查, shared coder 跑外部检查, inves-auditor 做过程审计, inves-reviewer 给 external reliability profile 打分。investigator 可直接调用 `deep-lit-reader` 读取自己认为该读的论文; 系统性搜索、引用/反引文扫盘或 saturation 走 `deep-lit-tick --scope investigation`, 且该 tick 必须严格按 prompt 大规模多读。
-- experiment factory 输入已经初始化好的同一个 workspace，负责执行 STATE.md A1/A2/A3 里的实验计划、审计、可靠性评分和报告素材沉淀。experiment loop 内部仍保留 `needs_litfeed -> deep-lit-tick --scope experiment`。reviewer 的 `ready` 只表示当前 STATE version 可报告, loop 不会据此自停；只有人类决定何时退出实验阶段。
+- investigation loop 是所有案例的第一阶段和 workspace 初始化入口。初始 `landscape.md` 由 `deep-lit-tick --scope investigation` 生成；investigator 随后只基于 topic、INVES、外部 source 和自己域内的 evidence 规划检查。shared coder 跑通过 execution ceiling 的 INVES WorkItem，inves-auditor 做过程审计，inves-reviewer 评审 investigation profile。loop 不会自停；人类在一个 current `ready` checkpoint 停止它并决定是否值得、能够进入实验。
+- experiment factory 只接管人类选择进入实验且 investigation checkpoint 已 `ready` 的 workspace。它读取 INVES 作为既定上游证据，初始化自己的 STATE，执行直接复现、审计和实验域评审。experiment loop 内仍保留 `needs_litfeed -> deep-lit-tick --scope experiment`，不会自停。
+- reliability reporter 不是 loop 或写作工厂。它在 investigation-only 或 investigation + experiment 的 reviewed checkpoint 上一次性生成 `REPORT.md`，不再搜索、实验或修改上游证据。
 - training-data loop 不做科研。它在固定 checkpoint 上读取父仓库 raw records，用 dataset-maker / fresh
   dataset-reviewer 对抗整理出 SFT、human correction、preference、verdict、rejected 和 reliability projection。
   封存一个 training batch 不会停止或完成 investigation/experiment loop。
@@ -71,6 +72,7 @@ v0 不启用 topic radar / topic distiller / posts 生产线。保留相关概�
     │   ├── tests/
     │   ├── STATE.md              # 内部实验复现状态, scientist 场景 A 初始化
     │   ├── INVES.md              # 外部可靠性审查状态, investigation-tick 初始化
+    │   ├── REPORT.md             # 当前 reviewed evidence snapshot 的最终可靠性报告
     │   ├── experiment-log.md     # 内部实验复现 loop 日志, 不入 git
     │   ├── inves-log.md          # 外部可靠性审查 loop 日志, 不入 git
     │   ├── lit-feed.md           # 共享文献 inbox
@@ -79,7 +81,7 @@ v0 不启用 topic radar / topic distiller / posts 生产线。保留相关概�
 ```
 
 `training/<slug>/` 与 `workspace/<slug>/` 平级且一一对应。科研 subagent 不写这里；它们在最终回复返回
-`learning_record`，两条 loop 的 dispatcher 保存 human feedback、原始 `$OUT` 和客观 dispatch provenance。
+`learning_record`，科研 dispatcher 保存 human feedback、原始 `$OUT` 和客观 dispatch provenance。
 训练目录不会因 experiment 的 `route/*` 切换或放弃而丢失。详细契约见
 `orchestrator/references/training_data_manual.md`。
 训练消费端只 glob `training/*/current/*.jsonl`；这些文件只发布 frozen `dataset_split=train` 的 reviewed rows。
@@ -100,21 +102,21 @@ dev/test/unassigned rows 留在不可变 batch history，不进入直接训练�
 
 ## 目标论文审查手续
 
-默认手续如下。除非人类在 `topics/` 或 `STATE.md §5` 明确改写优先级，agent 不应跳步。
+默认手续如下。除非人类明确改写优先级，agent 不应跳步。
 
 1. 读取 `topics/mmdd-slug.md`，明确目标论文、目标 claim、审查预算、非目标。
 2. 读取目标论文原文和 artifact 线索，不能只凭摘要或二手介绍。deep-lit-reader 精读 arXiv tex；非 arXiv target 由 investigator 读取 `materials/` 中已核验的全文 source/PDF，不伪造 landscape。
-3. 运行 `investigation-tick mmdd-slug`。如果 workspace 还不存在, 它初始化 `workspace/mmdd-slug/`，把目标材料放入 `topic.md`，创建 `INVES.md`，然后先通过 `deep-lit-tick --scope investigation` 生成 workspace 内的 `landscape.md` / 文献 source, 再交给 investigator。loop 不会自停, 直到人类叫停或要求进入实验。
-4. 运行 `experiment-tick mmdd-slug`。它只接管已初始化 workspace，首次进入时由 `experiment-scientist` 场景 A 创建自己的 `STATE.md` 和 `experiment-log.md`，随后按 STATE.md A1/A2/A3 执行复现/验证，保留 auditor、reviewer 和 experiment-scope `needs_litfeed`。
-5. 实验阶段到达人类认可且 nested workspace 已回到 `main` 的检查点后，再运行同一个 `investigation-tick mmdd-slug` 继续 external investigation，重点审查 cherry-pick、overclaim、适用边界、外部反证和实验结果暴露的新风险。investigation 不在可能被放弃的 experiment route 上写 workspace 级外部状态, loop 同样不会自停。
-6. 最终报告由后续 report agent 或人类从统一证据账本 / STATE / experiment reviewer verdict / INVES external review verdict 汇总生成，不启用独立写作工厂。
+3. 运行 `investigation-tick mmdd-slug`。如果 workspace 不存在，它初始化 workspace、目标材料和 `INVES.md`，先运行 investigation-scope deep-lit 生成 landscape/source，再持续做所有非实验审查。人类在 current inves-reviewer `ready` checkpoint 停止 loop。
+4. 人类根据调查结果、可执行性和成本决定下一步：不能做、不值得做或调查证据已足够时跳过实验；仍有重要可实验问题且成本合理时运行 `experiment-tick mmdd-slug`。该命令只接管 current investigation review 已 `ready` 的 workspace，由 scientist 初始化 STATE 并执行直接复现。
+5. 运行 `report mmdd-slug`。没有 STATE 时从 reviewed INVES 生成 investigation-only 报告；有 STATE 时必须等 experiment reviewer 的 current `ready` checkpoint，再从 INVES + STATE 生成报告。报告后不返回 investigation。
 
-两条 loop 对同一目标 claim 共用稳定 ID：共享 target claim 用 `C*`，investigation-only 用 `IC*`，experiment-only
-用 `EC*`。后进入的角色复用已有 C ID；同 ID 必须保持同一核心 claim text/source_ref，不能各自从 C1 重编。
+claim identity 单向建立：investigator 在 INVES I0 为目标论文 claim 分配稳定 `C*`；scientist 后进入时原样复用。
+investigation-only 使用 `IC*`，experiment-only 使用 `EC*`。同 ID 必须保持同一核心 claim text/source_ref，且进入
+git/trace 后不重编号。
 
 `training-data-tick <slug> <trigger>` 整理 case records；`training-data-tick --global <trigger>` 整理 system-level
 feedback/application records。它只写对应父仓库 training lane，workspace 全部只读；科研 dispatcher 的自动
-reviewer/user checkpoint 以同一命令串行触发。
+reviewer/reporter/user checkpoint 以同一命令串行触发。
 
 没有 active case 时，用 `human-feedback-tick record` 保存 system-level 用户原话；system prompt/harness 修正已有
 可核查 commit/outcome 后，用 `human-feedback-tick applied <HF-ID>` 登记结果并触发 global conversion。没有运行中

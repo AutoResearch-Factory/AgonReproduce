@@ -43,7 +43,7 @@ dispatcher 会提供 scope、绝对 data/workspace/training/batch 路径、batch
 - `TRAINING.md`、`BATCH.md`、正式 `current/`、本批 `current-projection/`；
 - prior sealed batches 和 latest valid reviews；
 - fixed raw trace/feedback、对应 raw inputs/outputs 和稳定 native trace refs；
-- workspace 的 topic、landscape、STATE、INVES、manifest/result/log、audit/review 和 git history，只读；
+- workspace 的 topic、landscape、STATE、INVES、REPORT、manifest/result/log、audit/review 和 git history，只读；
 - code repo 中 `policy_version` 对应的 source role prompt；
 - phase=`needs_maker_fix` 时的 latest valid review round。
 
@@ -68,7 +68,7 @@ case 只读取 fixed events 明确引用的 global HF receipts；global 只沿 f
 
 | 文件 | 生成条件 |
 |------|----------|
-| decision SFT | 后续 evidence/human/known answer 支持一个理想下一步 |
+| decision SFT | 后续 evidence/human/known answer 支持一个理想决定、判断或下一步 |
 | human correction SFT | 有旧行为、verbatim feedback、实际修正和 outcome |
 | preference | chosen/rejected 面对同一目标且有明确比较依据 |
 | verdict | case domain reviewer 给出可核查 claim-level 判断 |
@@ -79,6 +79,7 @@ case 只读取 fixed events 明确引用的 global HF receipts；global 只沿 f
 
 - experiment reviewer -> `assessment_domain=experiment`；
 - inves reviewer -> `assessment_domain=investigation`。
+- reliability reporter -> 普通 decision；不得伪造第三个 assessment domain 或 claim verdict label。
 
 domain 必须同时匹配 source `prompt_path` 和 learning record。experiment row 从 source STATE 逐字复制 `source_domain_verdict`，并按 training manual §12 将它拆成四个正交字段；禁止把 `NOT_REPRODUCIBLE` 直接变成 claim contradicted。investigation row 的 source verdict 固定为 JSON null。两套表示不一致就拒绝。没有独立真值时，`label_quality` 不得高于 `reviewer_agreement`。
 

@@ -20,7 +20,7 @@ You are a dispatcher. You run the deep literature review cycle for a given scope
 本 tick 跑在三种 scope 之一, 由参数决定:
 - `--scope topic <topic_slug>`: 兼容旧流程的手动 topic landscape 模式。v0 主路径不依赖它; 主路径由 `--scope investigation` 在 workspace 内生成 `landscape.md`。
 - `--scope experiment <workspace_slug>`: 服务正在跑的实验, 目标是给当前急需解决的问题找最新工具 / 证据 / 垫脚石 / 实现细节, 同时核对 failure attribution 是否有已有证据。搜索种子取自实验当前状态 (当前卡点 / 主攻 claim / 正在实现的 check / baseline / artifact gap)。集成时把搜出的全部新文献写进 workspace 的 `literature-ledger.md`, 只把命中当前急需问题的解决方案写进 `lit-feed.md` (inbox)。
-- `--scope investigation <workspace_slug>`: 服务 investigation loop 的系统性文献补充和初始 reliability landscape 生成, 目标是找外部可靠性信号: 目标论文/方法/数据/benchmark 的后续支持或反驳、复现/失败复现、artifact issue、metric/protocol 风险、cherry-pick / narrow-validity / overclaim 证据和可执行检查路线。搜索种子取自 topic brief、已有 landscape、INVES.md I0-I5、audit findings、STATE.md §4.3 claims（如已存在）、results/manifest、artifact/data/repo/benchmark 线索。集成时更新 workspace 的 `landscape.md`, 把全部新文献写进 `literature-ledger.md`, 把命中 investigation 当前问题的条目写进共享 `lit-feed.md`。investigator 直接调用 `deep-lit-reader` 自行读论文; 本 scope 负责大规模搜索、引用/反引文扫盘和 saturation, 必须严格按本 prompt 多轴搜索、多选论文、多派 reader、多轮扩展, 不得偷懒。
+- `--scope investigation <workspace_slug>`: 服务 investigation loop 的系统性文献补充和初始 reliability landscape 生成, 目标是找外部可靠性信号: 目标论文/方法/数据/benchmark 的后续支持或反驳、复现/失败复现、artifact issue、metric/protocol 风险、cherry-pick / narrow-validity / overclaim 证据和可执行检查路线。搜索种子取自 topic brief、已有 landscape、INVES.md I0-I5、audit findings、本域 results/manifest、artifact/data/repo/benchmark 线索；不读取 STATE。集成时更新 workspace 的 `landscape.md`, 把全部新文献写进 `literature-ledger.md`, 把命中 investigation 当前问题的条目写进共享 `lit-feed.md`。investigator 直接调用 `deep-lit-reader` 自行读论文; 本 scope 负责大规模搜索、引用/反引文扫盘和 saturation, 必须严格按本 prompt 多轴搜索、多选论文、多派 reader、多轮扩展, 不得偷懒。
 三种 scope 共用 `$ARXIV_WIKI_DIR` 指定的 wiki 池, 不重复读已读论文。下文凡涉及 scope 差异处会标注 [topic] / [experiment] / [investigation]。
 </scope>
 
@@ -56,7 +56,7 @@ Read（cwd 为 AgonReproduce-artifact，下同）。
 - `workspace/<workspace_slug>/literature-ledger.md`（含已知文献，作为 already-known）
 - [experiment] 必须读 `workspace/<workspace_slug>/STATE.md`、`workspace/<workspace_slug>/landscape.md`
 - [experiment] STATE.md 是当前急需问题的来源: `### 卡点` / §A6 已知问题 / 当前主攻 claim / §6 下一步。
-- [investigation] 额外重点读 `workspace/<workspace_slug>/INVES.md`、`workspace/<workspace_slug>/lit-feed.md`、INVES.md 文件开头 metadata `latest_inves_audit` / `latest_inves_review` 指向的 audit/review report、`results/*/manifest.json` 和 `data/MANIFEST.md` 中与 artifact/data/benchmark/repo 有关的条目。若 `workspace/<workspace_slug>/landscape.md` 已存在, 读取并增量更新; 若不存在, 本 tick 必须创建。若 `STATE.md` 还不存在, investigation scope 不能因此停止; 若存在, 只把 STATE.md §4.3 / results 作为内部实验上下文。
+- [investigation] 额外重点读 `workspace/<workspace_slug>/INVES.md`、`workspace/<workspace_slug>/lit-feed.md`、INVES.md 文件开头 metadata `latest_inves_audit` / `latest_inves_review` 指向的 audit/review report、investigator-owned `results/inves_*/manifest.json` 和 `data/MANIFEST.md` 中与 artifact/data/benchmark/repo 有关的条目。若 `workspace/<workspace_slug>/landscape.md` 已存在, 读取并增量更新; 若不存在, 本 tick 必须创建。不要读取 STATE.md。
 
 提取 target paper/case、核心 target claims、已有参考文献 arxiv_id 清单、已确认 prior evidence / artifact risk，压缩为一段 `<topic_context>`（≤1500 字）。搜索 query 的种子按 scope 取：[experiment] 用 STATE.md 里当前急需解决的问题（卡点 / 正在实现的 check / 待对比的 baseline / artifact gap），而非泛 topic；[investigation] 若 INVES 尚未展开, 用 topic brief + 初始 artifact/repo/data/benchmark 线索生成第一轮 landscape 搜索; 若 INVES 已有内容, 用 INVES.md 的 I0 claim decomposition / I1 questions / I2 findings / I3 audit issue / I4 next actions / I5 investigator runs / I7 review required checks, 再结合 claim-source 绑定、artifact/data/repo/benchmark 名称、疑似 cherry-pick/overclaim/narrow-validity 轴。
 
@@ -315,7 +315,7 @@ done
 
 [experiment] scope：写两处，职责不重叠。
 - **文献总账** `workspace/<workspace_slug>/literature-ledger.md`：本次搜出的**全部**新文献逐篇追加并解读（arxiv_id、关键发现、与本实验哪个 claim/baseline 相关），确保事后能追溯"搜过些什么"，一篇不漏。允许膨胀。
-- **共享 inbox** `workspace/<workspace_slug>/lit-feed.md`：只写命中 STATE.md 当前急需问题的条目。每条写清 `intended_reader: scientist / both`、`consumed_by: []`、`scope: experiment`、它解决哪个急需问题、搜到的解决方案/工具/垫脚石、来源（arxiv_id 与 wiki 路径）。不命中急需问题的论文不进 inbox（它们已在总账里）。写完把 frontmatter `unprocessed` 设为仍至少有一个 intended_reader 未消费的条目数。inbox 是流动收件箱，由下游 agent 按角色消费后清空，本步骤不做沉淀。
+- **共享 inbox** `workspace/<workspace_slug>/lit-feed.md`：只写命中 STATE.md 当前急需问题的条目。每条固定写 `intended_reader: scientist`、`consumed_by: []`、`scope: experiment`、它解决哪个急需问题、搜到的解决方案/工具/垫脚石、来源（arxiv_id 与 wiki 路径）。不命中急需问题的论文不进 inbox（它们已在总账里）。写完把 frontmatter `unprocessed` 设为未消费条目数。inbox 是流动收件箱，由 scientist 消费后清空，本步骤不做沉淀。
 
 [investigation] scope：写三处，职责不重叠。
 - **workspace landscape** `workspace/<workspace_slug>/landscape.md`：创建或更新 reliability landscape。它是 investigator 的 source view, 不是 experiment plan。开头必须绑定 target paper/case 的 exact id、本次 target full-text wiki/source 和 reader summary；随后包含已读论文索引、prior evidence、artifact/data/benchmark risk、metric/protocol risk、cherry-pick/overclaim/narrow-validity 线索、可执行外部检查路线。首次创建时用清楚的标题和 frontmatter, 之后增量合并, 不覆盖已有重要事实。

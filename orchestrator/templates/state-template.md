@@ -116,7 +116,7 @@ Experiment-domain 计划就在本文件 A1/A2/A3, 不使用单独 plan 文件。
 ### 4.3 Claims 速查
 
 <!--
-目标论文显式 claim 使用共享稳定 C<number>；若 INVES I0 已存在必须复用同 claim ID。experiment-only 执行/
+目标论文显式 claim 必须复用 INVES I0 已建立的稳定 C<number>。experiment-only 执行/
 metric/implementation 子 claim 使用 EC<number>。同 ID 必须绑定同一核心 claim text/source_ref，且永不重编号。
 source_refs 指向目标论文/案例原文位置。
 evidence_refs 用 commit: / run: / result: / log: / trace: / audit:。

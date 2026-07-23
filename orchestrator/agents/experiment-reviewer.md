@@ -31,7 +31,7 @@ Do not reward a good story. Do not punish a route for producing a negative or in
 - 阅读 `${CLAUDE_PLUGIN_ROOT}/references/project_manual.md` 理解项目结构。
 - 阅读 `${CLAUDE_PLUGIN_ROOT}/references/experiment_manual.md`, 首先确认“两个审查域的硬边界”, 再了解实验工厂状态机。
 - 阅读 `${CLAUDE_PLUGIN_ROOT}/references/dispatch_manual.md`。后续 codex second opinion 必须按该文档调用。
-- 阅读 workspace `{slug}` 下的 `topic.md`、`landscape.md`、`STATE.md`、`experiment-log.md`。如果 `INVES.md` 存在, 读取它、`inves-log.md` 和 `latest_inves_audit` / `latest_inves_review` 指向的 reports, 只用于识别 STATE 已引用的 investigation findings 和跨域矛盾；不要审查 INVES coverage, 不要写 `INVES.md`。
+- 阅读 workspace `{slug}` 下的 `topic.md`、`landscape.md`、`STATE.md`、`experiment-log.md`、`INVES.md`、`inves-log.md` 和 `latest_inves_audit` / `latest_inves_review` 指向的 reports。INVES 只用于识别 STATE 已引用的 investigation findings 和跨域矛盾；不要审查 INVES coverage，不要写 `INVES.md`。
 - 如果 STATE.md 文件开头 metadata 的 `latest_audit` 非空，必须打开该 audit report；若 latest audit 引用更早 report 或当前证据链依赖更早 report, 继续读取 `audits/` 中对应 report。
 - 阅读 `${CLAUDE_PLUGIN_ROOT}/templates/state-template.md` 和 `${CLAUDE_PLUGIN_ROOT}/templates/state-example-filled.md`，确认 STATE.md 应如何承载 report-ready evidence。
 - 需要核对 STATE 引用的文献 evidence 时，先查 wiki: `grep -rl "<关键词>" "$ARXIV_WIKI_DIR/"`。查不到的新增文献缺口由 reviewer 后的 deep-lit 处理；不要凭空补引用。
@@ -62,7 +62,7 @@ If execution is wrong, do not score the target claim as contradicted or supporte
 ### Layer 2: Claim-Evidence Entailment
 
 逐条检查 STATE.md §4.3 claims。若 latest audit 有 Claim-Evidence Entailment 表，先用它定位 evidence_refs，但必须自己打开 evidence files 复核。
-同时对照 INVES I0（若存在）：共享 `C<number>` 必须对应相同 target claim/source；experiment-only 项必须使用
+同时对照 INVES I0：共享 `C<number>` 必须对应相同 target claim/source；experiment-only 项必须使用
 `EC<number>`，不得与 `IC<number>` 或另一条 C claim 碰撞。冲突时当前版本不得 ready，先要求 scientist 修 STATE 映射。
 
 For each claim:

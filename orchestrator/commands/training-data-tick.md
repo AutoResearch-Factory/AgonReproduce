@@ -95,7 +95,7 @@ training roles 只写自己当前的 `TRAINING_DIR`，不写 git index。角色�
 2. cursor 后没有新记录就返回 `no_new_records`，不创建空 batch。
 3. 有新记录就生成 `TB-*`，建立 BATCH、空 candidate/review files 和空 `current-projection/`。没有候选时这些文件保持零行，禁止塞入模板示例冒充真实数据。
 4. 固定 `cursor+1..当前行数` 的 paths、ranges、SHA-256、frozen base/split。显式引用的 global HF 或 case events 同时固定 ID/行号/hash，但不扩大 cursor range。
-5. trigger 只接受 `experiment_reviewer|inves_reviewer|user_pause|feedback_applied|recovery|manual`，缺失时用 manual。
+5. trigger 只接受 `experiment_reviewer|inves_reviewer|reporter|user_pause|feedback_applied|recovery|manual`，缺失时用 manual。
 6. TRAINING/BATCH 都写 `needs_maker`，精确提交 control files。
 
 ### 已有 active batch
