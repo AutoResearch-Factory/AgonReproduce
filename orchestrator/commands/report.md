@@ -15,8 +15,7 @@ You are a dispatcher. 你只验证 checkpoint、fresh 调用 `reliability-report
    `experiment_manual.md` 和 `dispatch_manual.md`。
    严格执行 training manual §5A A/B/F：保存本次用户消息和 startup event；每次 parent repo 写入都使用
    data-repo write lock。
-3. 读取 `.settings.toml` 的 `reviewer_model`，完全复用 `experiment-tick` 的 reviewer routing/fallback。
-   Reporter 不需要 env-validator，不探测服务器。
+3. 读取 `.settings.toml` 的 `reporter_model`，缺失时用 `codex`。Reporter 不需要 env-validator，不探测服务器。
 4. 要求 nested workspace 当前 branch=`main`，tracked worktree clean，`INVES.md` 存在。
 5. 读取 INVES frontmatter，要求 `inves_phase=needs_investigator`、`inves_review_verdict=ready`、
    `latest_inves_review` 非空且可打开。INVES commit 必须等于 review commit，或是只把
@@ -43,7 +42,7 @@ evidence_snapshot: <before_commit>
 CLAUDE_PLUGIN_ROOT: <absolute plugin root>
 ```
 
-使用 `reviewer_model`，永远不 resume。返回后按 §5A D 保存 raw output 和
+使用 `reporter_model`，失败时 fallback `kimi`；已经使用 `kimi` 时不再换模型。永远不 resume。返回后按 §5A D 保存 raw output 和
 `actor_role=reporter,event_type=report` event，验证其 `record_type=decision`，再核对：
 
 - `REPORT.md` 存在且 frontmatter/八个正文 section 完整；

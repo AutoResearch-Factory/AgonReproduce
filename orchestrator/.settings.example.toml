@@ -1,6 +1,7 @@
 # AgonReproduce local settings
 
 parallelism      = 4              # Max concurrently active runs managed by one workspace coder
+reporter_model   = "codex"        # reliability reporter; fallback: kimi
 reviewer_model   = "claude"       # experiment reviewer; fallback: codex
 coder_model      = "claude"       # shared experiment coder
 scientist_model  = "codex"        # experiment scientist
