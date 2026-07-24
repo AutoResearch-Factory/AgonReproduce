@@ -70,7 +70,7 @@ case 只按 fixed event 的 HF IDs 读取对应 global receipts；global 只沿 
 ### 3. 两个科学审查域是否分开
 
 - experiment source -> `assessment_domain=experiment`；inves source -> `investigation`；
-- reporter source 只能是普通 decision，不得成为第三个 assessment domain 或 claim verdict label；
+- reporter source 只能是普通 decision；其 score 须有报告后的明确人类认可或独立裁决支持，domain `ready` 不算认可；不得成为第三个 assessment domain 或 claim verdict label；
 - experiment verdict 回到 source STATE，逐 claim 核对 source verdict、evidence 和四个正交字段；
 - `NOT_REPRODUCIBLE` 不能直接变成 contradicted；investigation source verdict 必须为 JSON null；
 - 共享 `C*` 的 claim text/source 跨 STATE/INVES 一致；`IC*` 只属 investigation，`EC*` 只属 experiment；

@@ -529,8 +529,8 @@ maker/reviewer 的原始输出按唯一 attempt ID 保存在 `batches/<batch-id>
 
 `reliability-result.json` 是跨批次当前投影，不是第三个 scientific reviewer。每个 claim 的 `assessments[]` 和每个 profile dimension 的条目分别保留 `assessment_domain=experiment|investigation`；新 batch 只更新同对象、同 domain 的条目，另一 domain 及未重审 claim/profile 保留，并累计 source batch refs。maker 禁止求平均、互相覆盖或发明 overall verdict；两个 domain 冲突进入 `human_review_required`。
 
-Reporter event 可生成普通 decision candidate，但不是第三个 domain verdict，不更新 `reliability-result.json`
-的两域 assessments。`REPORT.md` 是当前证据的可读裁决，不是 hidden gold。
+Reporter event 只有在报告后的明确人类认可或独立裁决支持其 score 时才生成正 decision candidate；domain
+`ready` 不算认可。它不是第三个 domain verdict，也不更新两域 assessments；`REPORT.md` 不是 hidden gold。
 
 claim identity 先遵守 experiment manual：共享 target claim 用 `C*`，investigation-only 用 `IC*`，experiment-only 用 `EC*`。同一个 `C*` 只有在核心 claim text 和 source_refs 跨 STATE/INVES 一致时才 merge；同 ID 不同 claim 是 schema conflict，相关 verdict 进入 rejected，reliability result 标 human review，不能靠 assessment_domain 掩盖碰撞。
 

@@ -79,7 +79,7 @@ case 只读取 fixed events 明确引用的 global HF receipts；global 只沿 f
 
 - experiment reviewer -> `assessment_domain=experiment`；
 - inves reviewer -> `assessment_domain=investigation`。
-- reliability reporter -> 普通 decision；不得伪造第三个 assessment domain 或 claim verdict label。
+- reliability reporter -> 普通 decision；其 score 只有得到报告后的明确人类认可或独立裁决支持才生成正样本，domain `ready` 不算认可；不得伪造第三个 assessment domain 或 claim verdict label。
 
 domain 必须同时匹配 source `prompt_path` 和 learning record。experiment row 从 source STATE 逐字复制 `source_domain_verdict`，并按 training manual §12 将它拆成四个正交字段；禁止把 `NOT_REPRODUCIBLE` 直接变成 claim contradicted。investigation row 的 source verdict 固定为 JSON null。两套表示不一致就拒绝。没有独立真值时，`label_quality` 不得高于 `reviewer_agreement`。
 
