@@ -26,8 +26,10 @@ dispatcher 已检查评审版本，你仍须复核：
 
 1. 保留 INVES 建立的 `C*`、`IC*` 和 STATE 新增的 `EC*`、source refs 与 evidence refs。
 2. 分别写 investigation assessment 和 experiment assessment，再给每条 claim 的综合结论。某一域未评估不抵消另一域的证据；两域冲突时保留冲突、降低 confidence，并标 human review，不把任务退回上游。
-3. 报告覆盖用户指定目标及标题/摘要/结论中的主张；只有“不成立会使论文主要贡献实质崩塌”的命题才是核心 claim，
-   不得因证据弱而排除。先判断核心命题的实质与方向；数值、配置、身份等细节仅在本身构成主要贡献时显著影响总评。
+3. 报告覆盖用户指定目标及标题/摘要/结论中的主张；先用一句话概括仍保留论文所声称科学价值的最小 thesis，
+   不能退化成任意局部真命题，并由 thesis 是否成立决定分数档位。只有 thesis 必需的 claim 才是核心；
+   现象、机制或方向成立时，量级、速度、泛化、示例和辅助方法的偏差只在档内降分，除非论文价值本身依赖该性质。
+   反之，论文价值依赖的理论、优势或阈值不成立时，局部结果不能挽救。不得因证据弱而排除核心 claim。
    拆开可独立判断的复合主张，局部成立不能替其他部分背书。总评由已评估核心 claims 主导，不按数量投票，
    也不平均两个 reviewer 的 readiness score；这些 score 只评价各自证据是否可报告。
 4. 区分 scientific claim、artifact availability、execution、result match 和 failure attribution。artifact 或环境失败本身不能推出 claim 错误。
@@ -45,7 +47,8 @@ dispatcher 已检查评审版本，你仍须复核：
 分数锚点：9-10 表示核心 claims 有强而一致的支持；7-8.9 表示核心命题实质成立，但重要定量、范围或辅助主张有边界；
 4-6.9 表示至少一个不可缺少的核心命题存在实质性混合证据；0-3.9 表示核心理论、证据或价值主张不受支持或被反驳，
 即使仍有局部结果成立。不能判断时必须使用 `null + NOT_ASSESSABLE`，不得用中间分伪装未知；label 必须与分数区间一致。
-复现偏差只有在协议、数据、模型和指标足够一致时才强烈降低 reliability；否则限定结论范围并降低 confidence。
+缺少官方实现，或关键协议、数据、模型、指标存在可能影响结论的未知差异时，重建的数值或量级偏差不作为论文反证，
+只限定结论范围并降低 confidence；论文原文、自带 artifact 或协议匹配证据中的矛盾直接影响 reliability。
 有效证据只在实际测试范围内改变 reliability。每条 claim 的 confidence 使用同一语义，不得因“确定它不可评价”而抬高。
 
 六维 profile 只使用以下值：
@@ -96,7 +99,7 @@ scope: current evidence snapshot; not a permanent verdict
 7. `Limits and Forbidden Inferences`
 8. `Evidence and Replay Pointers`
 
-Bottom Line 明确说明这是在上述时间、花费和 score scope 下的部分评判；未评估 claims 不参与可靠性分。
+Bottom Line 先写最小 thesis，再说明这是在上述时间、花费和 score scope 下的部分评判；未评估 claims 不参与可靠性分。
 使用清楚的人话，结论强度不得超过证据。完成后只提交 `REPORT.md`：
 
 ```text
