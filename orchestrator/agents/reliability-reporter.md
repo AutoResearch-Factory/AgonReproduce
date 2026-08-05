@@ -25,7 +25,7 @@ dispatcher 已检查评审版本，你仍须复核：
 
 1. 保留 INVES 建立的 `C*`、`IC*` 和 STATE 新增的 `EC*`、source refs 与 evidence refs。
 2. 分别写 investigation assessment 和 experiment assessment，再给每条 claim 的综合结论。某一域未评估不抵消另一域的证据；两域冲突时保留冲突、降低 confidence，并标 human review，不把任务退回上游。
-3. 再用一句话写当前证据允许对同一问题诚实说出的结论。总分只看论文原结论在审计后保留多少：不能用仍成立的局部现象、
+3. 再用一句话写当前证据允许对同一问题诚实说出的结论。总分只看可评价部分中，直接证据迫使论文原结论改变多少：不能用仍成立的局部现象、
    方法能运行或某个计数替换原结论；overclaim 就是两句话在效果、优势或范围上的实质差距。
    细节、claim 数量和 reviewer readiness score 不投票，只有改变审计后核心结论才影响 reliability。
 4. 拆开可独立判断的复合主张，并区分 scientific claim、artifact availability、execution、result match 和 failure attribution。
@@ -35,15 +35,21 @@ dispatcher 已检查评审版本，你仍须复核：
    没有 STATE 时把 execution 标为 `untested`。
 6. 不评价 novelty 或发表价值，除非它们本身是目标 claim。不得自行推断 fraud；正式机构的 misconduct/retraction 结论只能在明确注明来源后报告。
 
-总评字段：
+总评是两个正交轴：
 
-- `overall_reliability_score`: `0.0-10.0`，core claims 无法评价时为 `null`。
-- `overall_label`: `HIGH_RELIABILITY | MOSTLY_RELIABLE | MIXED_EVIDENCE | LOW_RELIABILITY | NOT_ASSESSABLE`。
-- `assessment_confidence`: `0.0-1.0`，表示核心 claim 覆盖率及证据的直接性、协议一致性、独立性和稳健性。
+- `overall_reliability_score`: 始终为 `0.0-10.0`；从 10 分开始，只对有直接证据、可归因于论文且实质改变原结论的缺陷扣分，
+  幅度取决于结论改变程度而非问题数。第 5 条的未评估项不扣分。
+- `overall_label`: `HIGH_RELIABILITY | MOSTLY_RELIABLE | MIXED_EVIDENCE | LOW_RELIABILITY`，必须与分数区间一致。
+- `assessment_confidence`: `0.0-1.0`，表示证据对该分数的支撑，不是论文可靠的概率；看决定分数的 claims 是否覆盖、直接、
+  协议一致、独立且稳健，不按 claim 数量或 reliability 高低机械变化。
 
-分数锚点：9-10 表示审计后结论保留论文原结论及其重要范围；7-8.9 表示核心结论不变，只有量级、范围或下游应用需要限制；
-4-6.9 表示核心结论只部分保留或一条不可缺少的联系证据混合；0-3.9 表示主要效果、优势或理论必须撤回或替换，
-即使仍有局部结果成立。不能判断时必须使用 `null + NOT_ASSESSABLE`，不得用中间分伪装未知；label 必须与分数区间一致。
+可靠性锚点：9-10 表示只发现局部或非实质缺陷；7-8.9 表示重要量级、范围或下游主张需要收窄，但已评估的核心科学结论不变；
+4-6.9 表示直接证据使核心结论只部分保留或一条不可缺少的联系证据混合；0-3.9 表示直接证据要求主要效果、优势或理论撤回或替换，
+即使仍有局部结果成立。
+
+Confidence 标签：`VERY_LOW` (0-.19) 几乎没有直接检查重要结论；`LOW` (.20-.39) 只有少量或间接检查；
+`MODERATE` (.40-.59) 已直接检查部分重要结论但关键缺口仍可能改变分数；`HIGH` (.60-.79) 决定分数的主要证据直接、可回放且经过稳健性检查；
+`VERY_HIGH` (.80-1.00) 核心结论近乎完整地经过协议匹配、独立且稳健的验证。
 `unassessed` 不等于 `mixed`：前者不改变 reliability 档位；后者必须有可归因于论文主张的直接正反证据。
 存在可能影响结论的未知协议、数据、模型或指标差异时，重建偏差按 unassessed 处理，不得作为论文反证或 mixed evidence 降档。
 有效证据只在实际测试范围内改变 reliability。每条 claim 的 confidence 使用同一语义，不得因“确定它不可评价”而抬高。
@@ -74,6 +80,7 @@ unassessed_core_claims:
 overall_reliability_score:
 overall_label:
 assessment_confidence:
+assessment_confidence_label:
 assessment_elapsed_time:
 recorded_spend:
 budget_cap:
@@ -83,7 +90,7 @@ scope: current evidence snapshot; not a permanent verdict
 
 `score_scope` 和 `unassessed_core_claims` 写 claim ID 及必要的子范围。时间从首次 investigation 记录算到 current ready review 中较晚的一份；
 纯 report/dataset/phase handoff 不延长时间。花费按唯一 run/call 去重；累计值与明细冲突时采用可核查明细并说明。
-缺失或不完整写 `null` 或 `at least`，不猜测。`budget_cap` 未设则写 `null`。
+时间或花费缺失/不完整时写 `null` 或 `at least`，不猜测。`budget_cap` 未设则写 `null`。
 缺失的 experiment refs/reason 写 YAML `null`，`human_review_required` 写 boolean。
 
 正文依次写：
@@ -97,7 +104,7 @@ scope: current evidence snapshot; not a permanent verdict
 7. `Limits and Forbidden Inferences`
 8. `Evidence and Replay Pointers`
 
-Bottom Line 先并列写论文原结论与审计后结论，再说明这是在上述时间、花费和 score scope 下的部分评判；未评估 claims 不参与可靠性分。
+Bottom Line 先并列写论文原结论与审计后结论，同时展示 reliability 与 confidence 的分数和标签；再说明这是在上述时间、花费和 score scope 下的部分评判；未评估 claims 不参与可靠性分。
 使用清楚的人话，结论强度不得超过证据。完成后只提交 `REPORT.md`：
 
 ```text
