@@ -29,16 +29,16 @@ dispatcher 已检查评审版本，你仍须复核：
    方法能运行或某个计数替换原结论；overclaim 就是两句话在效果、优势或范围上的实质差距。
    细节、claim 数量和 reviewer readiness score 不投票，只有改变审计后核心结论才影响 reliability。
 4. 拆开可独立判断的复合主张，并区分 scientific claim、artifact availability、execution、result match 和 failure attribution。
-   artifact 或环境失败本身不能推出 claim 错误。
-5. 因未测试、阻塞、缺少官方实现/关键协议/材料或缺乏独立复现而无法判断的 claim，不参与可靠性分；
-   只降低 assessment confidence 并列入 unassessed core claims。只有论文原文、自带 artifact 或协议匹配证据直接显示 claim-evidence mismatch，才降低 reliability。
-   没有 STATE 时把 execution 标为 `untested`。
+5. 每个负面 finding 先在 `Failure Attribution` 中只归为一类：`paper_error | unresolved | not_paper_error`。
+   `paper_error` 要求论文内部矛盾、算术/推导错误、claim 与自带证据不一致，或协议匹配且经稳健性检查的复现失败已排除合理的非论文解释。
+   只有 `paper_error` 可扣 reliability；仍可能来自 artifact、环境、协议、数据、模型、指标或我们实现的问题归为 `unresolved` 或 `not_paper_error`，扣 0 分，只降低 confidence。
+   一个 finding 的不同部分归因不同时先拆开；禁止使用 `paper + unresolved` 折中扣分。未测试或阻塞的 claim 列入 unassessed core claims；没有 STATE 时把 execution 标为 `untested`。
 6. 不评价 novelty 或发表价值，除非它们本身是目标 claim。不得自行推断 fraud；正式机构的 misconduct/retraction 结论只能在明确注明来源后报告。
 
 总评是两个正交轴：
 
-- `overall_reliability_score`: 始终为 `0.0-10.0`；从 10 分开始，只对有直接证据、可归因于论文且实质改变原结论的缺陷扣分，
-  幅度取决于结论改变程度而非问题数。第 5 条的未评估项不扣分。
+- `overall_reliability_score`: 始终为 `0.0-10.0`；从 10 分开始，只对通过第 5 条归因闸门且实质改变原结论的 `paper_error` 扣分，
+  幅度取决于结论改变程度而非问题数。
 - `overall_label`: `HIGH_RELIABILITY | MOSTLY_RELIABLE | MIXED_EVIDENCE | LOW_RELIABILITY`，必须与分数区间一致。
 - `assessment_confidence`: `0.0-1.0`，表示证据对该分数的支撑，不是论文可靠的概率；看决定分数的 claims 是否覆盖、直接、
   协议一致、独立且稳健，不按 claim 数量或 reliability 高低机械变化。
@@ -50,8 +50,6 @@ dispatcher 已检查评审版本，你仍须复核：
 Confidence 标签：`VERY_LOW` (0-.19) 几乎没有直接检查重要结论；`LOW` (.20-.39) 只有少量或间接检查；
 `MODERATE` (.40-.59) 已直接检查部分重要结论但关键缺口仍可能改变分数；`HIGH` (.60-.79) 决定分数的主要证据直接、可回放且经过稳健性检查；
 `VERY_HIGH` (.80-1.00) 核心结论近乎完整地经过协议匹配、独立且稳健的验证。
-`unassessed` 不等于 `mixed`：前者不改变 reliability 档位；后者必须有可归因于论文主张的直接正反证据。
-存在可能影响结论的未知协议、数据、模型或指标差异时，重建偏差按 unassessed 处理，不得作为论文反证或 mixed evidence 降档。
 有效证据只在实际测试范围内改变 reliability。每条 claim 的 confidence 使用同一语义，不得因“确定它不可评价”而抬高。
 
 六维 profile 只使用以下值：
