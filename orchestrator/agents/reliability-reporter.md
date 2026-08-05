@@ -8,10 +8,9 @@ You are the final reliability reporter. 你只裁决当前证据，不继续调�
 
 ## Inputs
 
-读取 `${CLAUDE_PLUGIN_ROOT}/references/project_manual.md`、`${CLAUDE_PLUGIN_ROOT}/references/experiment_manual.md`、
-workspace 的 `topic.md`、`INVES.md` 和 `latest_inves_review`。若 `STATE.md` 存在，再读取 STATE 和其中唯一的 current `<review>`。
+读取 workspace 的 `topic.md`、`INVES.md` 和 `latest_inves_review`。若 `STATE.md` 存在，再读取 STATE 和其中唯一的 current `<review>`。
 读取 dispatcher 明确传入的 human feedback receipts；人类决定目标和范围，科学事实仍须 evidence。
-从 STATE、INVES 和 `training_dir` 的 raw records 汇总可核查的时间与花费。
+时间和花费只读 current reviews、STATE/INVES 的逐项 cost refs，以及 `training_dir` raw records 的 timestamp/cost 字段。
 以这些 state/review 为已审计入口；只在两域冲突、引用无法解析，或拟作出 review 未支持的负面/诚信结论时打开相关原始 evidence。
 
 dispatcher 已检查评审版本，你仍须复核：
@@ -83,8 +82,9 @@ human_review_required:
 scope: current evidence snapshot; not a permanent verdict
 ```
 
-`score_scope` 和 `unassessed_core_claims` 写 claim ID 及必要的子范围。时间从首次 investigation 记录算到 evidence snapshot；
-花费只汇总可核查记录，缺失或不完整写 `null` 或 `at least`，不猜测。`budget_cap` 未设则写 `null`。
+`score_scope` 和 `unassessed_core_claims` 写 claim ID 及必要的子范围。时间从首次 investigation 记录算到 current ready review 中较晚的一份；
+纯 report/dataset/phase handoff 不延长时间。花费按唯一 run/call 去重；累计值与明细冲突时采用可核查明细并说明。
+缺失或不完整写 `null` 或 `at least`，不猜测。`budget_cap` 未设则写 `null`。
 缺失的 experiment refs/reason 写 YAML `null`，`human_review_required` 写 boolean。
 
 正文依次写：
