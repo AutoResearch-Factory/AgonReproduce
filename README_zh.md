@@ -1,6 +1,6 @@
 # AgonReproduce
 
-[English](README.md)
+[English](README.md) | 中文
 
 AgonReproduce 是一个以提示词为核心的科研可靠性审查系统。它把文献调查、直接实验复现、独立审查、人类纠正和训练数据整理放进同一条可追踪流程。
 

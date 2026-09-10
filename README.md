@@ -1,6 +1,6 @@
 # AgonReproduce
 
-[中文](README_zh.md)
+English | [中文](README_zh.md)
 
 AgonReproduce is a prompt-first system for auditing the reliability of research claims. It
 combines literature investigation, direct experiment reproduction, independent review, human
